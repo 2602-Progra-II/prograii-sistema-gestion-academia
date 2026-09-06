@@ -1,0 +1,55 @@
+classDiagram
+
+class Usuario {
+    -String idUsuario
+    -String nombreUsuario
+    -String apellidoUsuario
+    -String contrasena
+    -EstadoUsuario estado
+}
+
+class Rol {
+    -int idRol
+    -String nombreRol
+    -String descripcion
+}
+
+class Sesion {
+    -int idSesion
+    -LocalDateTime fechaInicio
+    -LocalDateTime fechaFin
+    -boolean activa
+    +estaActiva() boolean
+}
+
+class AutenticacionService {
+    +iniciarSesion(String nombreUsuario, String contrasena) Sesion
+    +validarCredenciales(String nombreUsuario, String contrasena) boolean
+    +cerrarSesion(Sesion sesion)
+}
+
+class UsuarioService {
+    +registrarUsuario(Usuario usuario)
+    +modificarUsuario(Usuario usuario)
+    +activarUsuario(Usuario usuario)
+    +desactivarUsuario(Usuario usuario)
+    +asignarRol(Usuario usuario, Rol rol)
+}
+
+class EstadoUsuario {
+    <<enumeration>>
+    ACTIVO
+    INACTIVO
+}
+
+Usuario "0..*" --> "1" Rol : tiene
+
+Usuario "1" --> "0..*" Sesion : inicia
+
+AutenticacionService --> Usuario : autentica
+AutenticacionService --> Sesion : administra
+
+UsuarioService --> Usuario : administra
+UsuarioService --> Rol : asigna
+
+Usuario --> EstadoUsuario

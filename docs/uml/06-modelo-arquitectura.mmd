@@ -1,0 +1,278 @@
+classDiagram
+
+direction LR
+
+
+namespace Presentacion {
+
+    class LoginController {
+        +iniciarSesion()
+    }
+
+    class UsuarioController {
+        +registrarUsuario()
+        +modificarUsuario()
+        +activarUsuario()
+        +desactivarUsuario()
+        +asignarRol()
+    }
+
+    class AcademicoController {
+        +registrarPeriodo()
+        +registrarCurso()
+        +asignarInstructor()
+        +matricularEstudiante()
+        +publicarMaterial()
+        +crearActividad()
+        +entregarActividad()
+        +calificarActividad()
+    }
+
+    class FinancieroController {
+        +registrarPago()
+        +aprobarPago()
+        +rechazarPago()
+        +generarFactura()
+        +consultarEstadoCuenta()
+    }
+
+    class ReporteController {
+        +consultarRendimiento()
+        +consultarMora()
+        +consultarFacturacion()
+    }
+}
+
+
+namespace Servicios {
+
+    class AutenticacionService {
+        +iniciarSesion(nombreUsuario, contrasena) Sesion
+        +validarCredenciales(nombreUsuario, contrasena) boolean
+        +cerrarSesion(sesion)
+    }
+
+    class UsuarioService {
+        +registrarUsuario(usuario)
+        +modificarUsuario(usuario)
+        +activarUsuario(usuario)
+        +desactivarUsuario(usuario)
+        +asignarRol(usuario, rol)
+    }
+
+    class PeriodoAcademicoService {
+        +registrarPeriodo(periodo)
+        +modificarPeriodo(periodo)
+        +activarPeriodo(periodo)
+        +finalizarPeriodo(periodo)
+    }
+
+    class CursoService {
+        +registrarCurso(curso)
+        +asignarInstructor(curso, instructor)
+        +consultarCurso(idCurso)
+    }
+
+    class MatriculaService {
+        +matricular(estudiante, curso)
+        +consultarMatricula(idMatricula)
+    }
+
+    class MaterialService {
+        +publicarMaterial(material, instructor)
+        +consultarMaterial(curso, estudiante)
+        +descargarMaterial(material, estudiante)
+    }
+
+    class ActividadService {
+        +crearActividad(actividad, instructor)
+        +consultarActividades(estudiante, curso)
+    }
+
+    class EvaluacionService {
+        +entregarActividad(entrega, estudiante)
+        +calificarActividad(entrega, instructor)
+        +consultarCalificaciones(estudiante, curso)
+    }
+
+    class PagoService {
+        +registrarPago(pago, estudiante)
+        +aprobarPago(pago, asesor)
+        +rechazarPago(pago, asesor)
+    }
+
+    class FacturaService {
+        +generarFactura(pagoValidado, asistente)
+        +consultarFacturas(estudiante)
+        +consultarDetalle(factura)
+    }
+
+    class EstadoCuentaService {
+        +calcularSaldo(estudiante)
+        +verificarMora(estudiante) boolean
+    }
+
+    class ReporteService {
+        +calcularRendimiento(curso)
+        +consultarEstudiantesMora(filtros)
+        +calcularIndicadoresMora(filtros)
+        +consultarHistorialFacturacion(estudiante)
+    }
+}
+
+
+namespace Dominio {
+
+    class Usuario
+    class Rol
+    class Sesion
+    class PeriodoAcademico
+    class Curso
+    class Matricula
+    class MaterialDidactico
+    class ActividadEvaluativa
+    class EntregaEvaluacion
+    class Pago
+    class Factura
+    class EstadoCuenta
+    class IndicadorMora
+}
+
+
+namespace Persistencia {
+
+    class UsuarioRepository {
+        +guardar(usuario)
+        +buscarPorId(id)
+        +buscarPorNombreUsuario(nombre)
+        +actualizar(usuario)
+    }
+
+    class RolRepository {
+        +buscarPorId(id)
+        +listar()
+    }
+
+    class CursoRepository {
+        +guardar(curso)
+        +buscarPorId(id)
+        +listarPorPeriodo(idPeriodo)
+    }
+
+    class MatriculaRepository {
+        +guardar(matricula)
+        +listarPorEstudiante(idEstudiante)
+        +listarPorCurso(idCurso)
+    }
+
+    class PagoRepository {
+        +guardar(pago)
+        +buscarPorId(id)
+        +listarPendientes()
+        +actualizar(pago)
+    }
+
+    class FacturaRepository {
+        +guardar(factura)
+        +listarPorEstudiante(idEstudiante)
+    }
+
+    class MaterialRepository {
+        +guardar(material)
+        +listarPorCurso(idCurso)
+    }
+
+    class ActividadRepository {
+        +guardar(actividad)
+        +listarPorCurso(idCurso)
+    }
+
+    class EntregaRepository {
+        +guardar(entrega)
+        +listarPorActividad(idActividad)
+        +listarPorEstudiante(idEstudiante)
+    }
+}
+
+
+namespace BaseDeDatos {
+
+    class BaseDatosRelacional {
+        <<database>>
+    }
+}
+
+
+LoginController --> AutenticacionService
+
+UsuarioController --> UsuarioService
+
+AcademicoController --> PeriodoAcademicoService
+AcademicoController --> CursoService
+AcademicoController --> MatriculaService
+AcademicoController --> MaterialService
+AcademicoController --> ActividadService
+AcademicoController --> EvaluacionService
+
+FinancieroController --> PagoService
+FinancieroController --> FacturaService
+FinancieroController --> EstadoCuentaService
+
+ReporteController --> ReporteService
+
+
+AutenticacionService --> UsuarioRepository
+AutenticacionService --> Sesion
+AutenticacionService --> Usuario
+
+UsuarioService --> UsuarioRepository
+UsuarioService --> RolRepository
+UsuarioService --> Usuario
+UsuarioService --> Rol
+
+PeriodoAcademicoService --> PeriodoAcademico
+
+CursoService --> Curso
+CursoService --> CursoRepository
+
+MatriculaService --> Matricula
+MatriculaService --> MatriculaRepository
+MatriculaService --> Usuario
+MatriculaService --> Curso
+
+MaterialService --> MaterialDidactico
+MaterialService --> MaterialRepository
+
+ActividadService --> ActividadEvaluativa
+ActividadService --> ActividadRepository
+
+EvaluacionService --> EntregaEvaluacion
+EvaluacionService --> EntregaRepository
+EvaluacionService --> ActividadEvaluativa
+
+PagoService --> Pago
+PagoService --> PagoRepository
+PagoService --> Usuario
+
+FacturaService --> Factura
+FacturaService --> FacturaRepository
+FacturaService --> Pago
+
+EstadoCuentaService --> Pago
+EstadoCuentaService --> EstadoCuenta
+
+ReporteService --> Curso
+ReporteService --> Pago
+ReporteService --> Factura
+ReporteService --> IndicadorMora
+
+
+UsuarioRepository --> BaseDatosRelacional
+RolRepository --> BaseDatosRelacional
+CursoRepository --> BaseDatosRelacional
+MatriculaRepository --> BaseDatosRelacional
+PagoRepository --> BaseDatosRelacional
+FacturaRepository --> BaseDatosRelacional
+MaterialRepository --> BaseDatosRelacional
+ActividadRepository --> BaseDatosRelacional
+EntregaRepository --> BaseDatosRelacional

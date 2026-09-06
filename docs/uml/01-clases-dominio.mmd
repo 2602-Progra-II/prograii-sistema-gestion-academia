@@ -1,0 +1,136 @@
+classDiagram
+
+class Usuario {
+    -String idUsuario
+    -String nombreUsuario
+	-String apellidoUsuario
+    -String contrasena
+    -EstadoUsuario estado
+}
+
+class Rol {
+    -int idRol
+    -String nombreRol
+    -String descripcion
+}
+
+class PeriodoAcademico {
+    -int idPeriodo
+    -String nombrePeriodo
+    -LocalDate fechaInicio
+    -LocalDate fechaFin
+    -EstadoPeriodo estado
+    +fechasValidas() boolean
+    +estaVigente() boolean
+}
+
+class Curso {
+    -int idCurso
+    -String codigoCurso
+    -String nombreCurso
+    -String descripcion
+    -EstadoCurso estado
+}
+
+class Matricula {
+    -int idMatricula
+    -LocalDate fechaMatricula
+}
+
+class Pago {
+    -int idPago
+    -double monto
+    -LocalDate fechaPago
+    -String rutaComprobante
+    -EstadoPago estadoPago
+    +estaPendiente() boolean
+    +estaAprobado() boolean
+    +estaRechazado() boolean
+}
+
+class Factura {
+    -int idFactura
+    -String numeroFactura
+    -LocalDate fechaEmision
+    -double montoTotal
+}
+
+class MaterialDidactico {
+    -int idMaterial
+    -String tituloMaterial
+    -String rutaArchivo
+    -LocalDate fechaSubida
+}
+
+class ActividadEvaluativa {
+    -int idActividad
+    -String nombreActividad
+    -String descripcion
+    -LocalDate fechaLimite
+    -double ponderacion
+    +estaVencida() boolean
+}
+
+class EntregaEvaluacion {
+    -int idEntrega
+    -String rutaArchivoEntrega
+    -LocalDate fechaEntrega
+    -double calificacion
+    -String observaciones
+    +estaCalificada() boolean
+}
+
+class EstadoUsuario {
+    <<enumeration>>
+    ACTIVO
+    INACTIVO
+}
+
+class EstadoPeriodo {
+    <<enumeration>>
+    PLANIFICADO
+    ACTIVO
+    FINALIZADO
+}
+
+class EstadoCurso {
+    <<enumeration>>
+    INACTIVO
+    ACTIVO
+}
+
+class EstadoPago {
+    <<enumeration>>
+    PENDIENTE
+    APROBADO
+    RECHAZADO
+}
+
+
+Rol "1" <-- "0..*" Usuario : tiene
+
+PeriodoAcademico "1" <-- "0..*" Curso : contiene
+
+Usuario "0..1" <-- "0..*" Curso : instructor
+
+Usuario "1" <-- "0..*" Matricula : estudiante
+Curso "1" <-- "0..*" Matricula : curso
+
+Usuario "1" <-- "0..*" Pago : realiza
+Usuario "0..1" <-- "0..*" Pago : valida
+
+Pago "1" <-- "0..1" Factura : genera
+Usuario "1" <-- "0..*" Factura : pertenece
+
+Curso "1" *-- "0..*" MaterialDidactico : contiene
+
+Curso "1" *-- "0..*" ActividadEvaluativa : contiene
+
+ActividadEvaluativa "1" *-- "0..*" EntregaEvaluacion : recibe
+Usuario "1" <-- "0..*" EntregaEvaluacion : estudiante
+
+
+Usuario --> EstadoUsuario
+PeriodoAcademico --> EstadoPeriodo
+Curso --> EstadoCurso
+Pago --> EstadoPago
