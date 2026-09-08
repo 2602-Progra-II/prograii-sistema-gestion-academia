@@ -31,10 +31,18 @@ class Curso {
     -EstadoCurso estado
 }
 
-class Matricula {
-    -int idMatricula
-    -LocalDate fechaMatricula
-}
+    class Matricula {
+        -int idMatricula
+        -LocalDate fechaMatricula
+        -EstadoMatricula estadoMatricula
+    }
+
+    class EstadoMatricula {
+        <<enumeration>>
+        PENDIENTE_PAGO
+        ACTIVA
+        CANCELADA
+    }
 
 class MaterialDidactico {
     -int idMaterial
@@ -102,3 +110,4 @@ Usuario "1" <-- "0..*" EntregaEvaluacion : realiza
 Usuario --> EstadoUsuario
 PeriodoAcademico --> EstadoPeriodo
 Curso --> EstadoCurso
+    Matricula ..> EstadoMatricula

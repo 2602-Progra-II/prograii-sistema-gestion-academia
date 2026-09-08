@@ -35,7 +35,15 @@ class Curso {
 class Matricula {
     -int idMatricula
     -LocalDate fechaMatricula
+    -EstadoMatricula estadoMatricula
 }
+
+class EstadoMatricula {
+    <<enumeration>>
+    PENDIENTE_PAGO
+    ACTIVA
+    CANCELADA
+ }
 
 class Pago {
     -int idPago
@@ -43,6 +51,7 @@ class Pago {
     -LocalDate fechaPago
     -String rutaComprobante
     -EstadoPago estadoPago
+    -String idAsesorValidador
     +estaPendiente() boolean
     +estaAprobado() boolean
     +estaRechazado() boolean
@@ -134,3 +143,4 @@ Usuario --> EstadoUsuario
 PeriodoAcademico --> EstadoPeriodo
 Curso --> EstadoCurso
 Pago --> EstadoPago
+    Matricula ..> EstadoMatricula
