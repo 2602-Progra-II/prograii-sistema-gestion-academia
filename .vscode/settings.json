@@ -4,6 +4,7 @@
         "src/test/java"
     ],
     "java.project.referencedLibraries": [
-        "lib/*.jar"
-    ]
+        "lib/**/*.jar"
+    ],
+    "java.debug.settings.onBuildFailureProceed": true
 }
