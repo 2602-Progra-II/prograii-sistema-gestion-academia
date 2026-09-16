@@ -1,0 +1,34 @@
+package main.java.sv.gestionacademica.controller;
+
+import main.java.sv.gestionacademica.entity.Rol;
+import main.java.sv.gestionacademica.entity.Usuario;
+import main.java.sv.gestionacademica.service.UsuarioService;
+
+public class UsuarioController {
+
+    private UsuarioService usuarioService;
+
+    public UsuarioController(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
+    }
+
+    public void registrar(Usuario usuario) {
+        usuarioService.registrar(usuario);
+    }
+
+    public void modificar(Usuario usuario) {
+        usuarioService.modificar(usuario);
+    }
+
+    public void activar(int idUsuario) {
+        usuarioService.activar(idUsuario);
+    }
+
+    public void desactivar(int idUsuario) {
+        usuarioService.desactivar(idUsuario);
+    }
+
+    public void asignarRol(int idUsuario, Rol rol) {
+        usuarioService.asignarRol(idUsuario, rol);
+    }
+}
