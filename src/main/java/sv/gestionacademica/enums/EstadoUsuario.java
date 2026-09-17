@@ -1,4 +1,4 @@
-package main.java.sv.gestionacademica.enums;
+package sv.gestionacademica.enums;
 
 public enum EstadoUsuario {
     ACTIVO,

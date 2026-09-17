@@ -1,8 +1,8 @@
-package main.java.sv.gestionacademica.controller;
+package sv.gestionacademica.controller;
 
-import main.java.sv.gestionacademica.entity.Rol;
-import main.java.sv.gestionacademica.entity.Usuario;
-import main.java.sv.gestionacademica.service.UsuarioService;
+import sv.gestionacademica.entity.Rol;
+import sv.gestionacademica.entity.Usuario;
+import sv.gestionacademica.service.UsuarioService;
 
 public class UsuarioController {
 

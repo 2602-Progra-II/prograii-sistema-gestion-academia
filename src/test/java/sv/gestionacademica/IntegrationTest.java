@@ -1,10 +1,10 @@
-package com.academia;
+package sv.gestionacademica;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
-import static org.junit.jupiter.api.Assertions.*;
+import sv.gestionacademica.service.AutenticacionService;
 
 public class IntegrationTest {
 
@@ -22,27 +22,27 @@ public class IntegrationTest {
     @DisplayName("Debe autenticar exitosamente con credenciales válidas")
     void testAutenticacionExitosa() {
         boolean resultado = autenticacionService.login("admin", "1234");
-        assertTrue(resultado, "El usuario debería autenticarse correctamente con credenciales válidas.");
+        Assertions.assertTrue(resultado, "El usuario debería autenticarse correctamente con credenciales válidas.");
     }
 
     @Test
     @DisplayName("Debe fallar la autenticación con contraseña incorrecta")
     void testAutenticacionPasswordIncorrecto() {
         boolean resultado = autenticacionService.login("admin", "clave_erronea");
-        assertFalse(resultado, "La autenticación debería fallar cuando la contraseña es incorrecta.");
+        Assertions.assertFalse(resultado, "La autenticación debería fallar cuando la contraseña es incorrecta.");
     }
 
     @Test
     @DisplayName("Debe fallar la autenticación cuando el usuario no existe")
     void testAutenticacionUsuarioNoExiste() {
         boolean resultado = autenticacionService.login("usuario_inexistente", "1234");
-        assertFalse(resultado, "La autenticación debería fallar si el usuario no está registrado.");
+        Assertions.assertFalse(resultado, "La autenticación debería fallar si el usuario no está registrado.");
     }
 
     @Test
     @DisplayName("Debe rechazar credenciales nulas o vacías")
     void testAutenticacionCamposVacios() {
-        assertThrows(IllegalArgumentException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             autenticacionService.login("", "");
         }, "Debería lanzar excepción si se envían parámetros vacíos.");
     }

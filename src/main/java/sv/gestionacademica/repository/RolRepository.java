@@ -1,4 +1,4 @@
-package main.java.sv.gestionacademica.repository;
+package sv.gestionacademica.repository;
 
 public class RolRepository {
 }
