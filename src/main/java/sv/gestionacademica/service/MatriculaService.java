@@ -18,7 +18,6 @@ public class MatriculaService {
         this.siguienteId = 1;
     }
 
-    // Crea una matrícula nueva validando que el estudiante no esté ya en el curso
     public Matricula crearMatricula(Usuario estudiante, Curso curso, EstadoMatricula estado) {
         if (estudiante == null || curso == null) {
             throw new IllegalArgumentException("El estudiante y el curso son obligatorios");
@@ -31,12 +30,10 @@ public class MatriculaService {
         return nueva;
     }
 
-    // Devuelve todas las matrículas del sistema
     public List<Matricula> listarMatriculas() {
         return new ArrayList<>(matriculas);
     }
 
-    // Busca todas las matrículas de un estudiante específico
     public List<Matricula> listarPorEstudiante(Usuario estudiante) {
         List<Matricula> resultado = new ArrayList<>();
         for (Matricula m : matriculas) {
@@ -47,7 +44,6 @@ public class MatriculaService {
         return resultado;
     }
 
-    // Verifica si un estudiante ya tiene matrícula en un curso (evita duplicados)
     public boolean existeMatricula(Usuario estudiante, Curso curso) {
         for (Matricula m : matriculas) {
             if (m.getEstudiante().equals(estudiante) && m.getCurso().equals(curso)
@@ -58,7 +54,6 @@ public class MatriculaService {
         return false;
     }
 
-    // Cambia el estado de una matrícula (ej. de PENDIENTE_PAGO a ACTIVA)
     public void cambiarEstado(int idMatricula, EstadoMatricula nuevoEstado) {
         Matricula m = buscarPorId(idMatricula);
         if (m == null) {
@@ -67,12 +62,10 @@ public class MatriculaService {
         m.setEstadoMatricula(nuevoEstado);
     }
 
-    // Cancela una matrícula
     public void cancelarMatricula(int idMatricula) {
         cambiarEstado(idMatricula, EstadoMatricula.CANCELADA);
     }
 
-    // Busca una matrícula por su id
     public Matricula buscarPorId(int idMatricula) {
         for (Matricula m : matriculas) {
             if (m.getIdMatricula() == idMatricula) {
