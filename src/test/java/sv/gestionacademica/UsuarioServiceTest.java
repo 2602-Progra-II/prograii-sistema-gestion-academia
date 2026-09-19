@@ -1,10 +1,10 @@
-package com.academia;
+package sv.gestionacademica;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
-import static org.junit.jupiter.api.Assertions.*;
+import sv.gestionacademica.service.UsuarioService;
 
 public class UsuarioServiceTest {
 
@@ -19,7 +19,7 @@ public class UsuarioServiceTest {
     @DisplayName("Debe registrar un nuevo usuario correctamente")
     void testRegistrarUsuarioExitoso() {
         boolean registrado = usuarioService.registrarUsuario("estudiante1");
-        assertTrue(registrado, "El usuario debería registrarse con éxito");
+        Assertions.assertTrue(registrado, "El usuario debería registrarse con éxito");
         assertTrue(usuarioService.existeUsuario("estudiante1"), "El usuario debería existir en el sistema");
     }
 
@@ -27,13 +27,13 @@ public class UsuarioServiceTest {
     @DisplayName("No debe permitir registrar un usuario duplicado")
     void testRegistrarUsuarioDuplicado() {
         boolean registrado = usuarioService.registrarUsuario("admin");
-        assertFalse(registrado, "No se debería permitir registrar un usuario que ya existe");
+        Assertions.assertFalse(registrado, "No se debería permitir registrar un usuario que ya existe");
     }
 
     @Test
     @DisplayName("Debe lanzar excepción al intentar registrar un usuario nulo o vacío")
     void testRegistrarUsuarioInvalido() {
-        assertThrows(IllegalArgumentException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             usuarioService.registrarUsuario("");
         }, "Debería lanzar excepción si el nombre de usuario está vacío");
     }
