@@ -1,6 +1,6 @@
-package main.java.sv.gestionacademica.repository;
+package sv.gestionacademica.repository;
 
-import main.java.sv.gestionacademica.entity.Usuario;
+import sv.gestionacademica.entity.Usuario;
 
 import java.util.List;
 

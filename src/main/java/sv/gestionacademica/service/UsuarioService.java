@@ -1,7 +1,7 @@
-package main.java.sv.gestionacademica.service;
+package sv.gestionacademica.service;
 
-import main.java.sv.gestionacademica.entity.Rol;
-import main.java.sv.gestionacademica.entity.Usuario;
+import sv.gestionacademica.entity.Rol;
+import sv.gestionacademica.entity.Usuario;
 
 public interface UsuarioService {
 

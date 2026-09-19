@@ -1,6 +1,6 @@
-package main.java.sv.gestionacademica.entity;
+package sv.gestionacademica.entity;
 
-import main.java.sv.gestionacademica.enums.EstadoUsuario;
+import sv.gestionacademica.enums.EstadoUsuario;
 
 public class Usuario {
 
