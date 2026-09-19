@@ -1,7 +1,7 @@
-package main.java.sv.gestionacademica.controller;
+package sv.gestionacademica.controller;
 
-import main.java.sv.gestionacademica.entity.Sesion;
-import main.java.sv.gestionacademica.service.AutenticacionService;
+import sv.gestionacademica.entity.Sesion;
+import sv.gestionacademica.service.AutenticacionService;
 
 public class LoginController {
 
