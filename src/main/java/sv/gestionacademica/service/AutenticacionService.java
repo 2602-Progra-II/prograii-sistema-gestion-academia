@@ -1,6 +1,6 @@
-package main.java.sv.gestionacademica.service;
+package sv.gestionacademica.service;
 
-import main.java.sv.gestionacademica.entity.Sesion;
+import sv.gestionacademica.entity.Sesion;
 
 public interface AutenticacionService {
 
