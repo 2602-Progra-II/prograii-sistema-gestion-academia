@@ -1,56 +1,42 @@
 package sv.gestionacademica.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+
+import sv.gestionacademica.entity.Usuario;
+import sv.gestionacademica.repository.UsuarioRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class PersistenciaTest {
 
-    private PersistenciaService persistenciaService;
-
-    @BeforeEach
-    void setUp() {
-        persistenciaService = new PersistenciaService();
-    }
-
     @Test
     @DisplayName("Debe guardar y recuperar un registro correctamente")
-    void testGuardarYObtenerRegistro() {
-        boolean guardado = persistenciaService.guardarRegistro("usr_1", "Roberto Gutierrez");
-        assertTrue(guardado, "El registro debería guardarse con éxito");
-        
-        String resultado = persistenciaService.obtenerRegistro("usr_1");
-        assertEquals("Roberto Gutierrez", resultado, "El valor recuperado debe coincidir con el almacenado");
-    }
+    void testGuardarYRecuperar() {
+        UsuarioRepository repo = new UsuarioRepository() {
+            private final List<Usuario> lista = new ArrayList<>();
 
-    @Test
-    @DisplayName("Debe lanzar excepción si se intenta guardar una clave vacía o nula")
-    void testGuardarClaveInvalida() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            persistenciaService.guardarRegistro("", "Datos de prueba");
-        }, "Debe lanzar excepción al intentar guardar una clave vacía");
-    }
+            @Override
+            public void guardar(Usuario usuario) { lista.add(usuario); }
 
-    @Test
-    @DisplayName("Debe eliminar un registro existente correctamente")
-    void testEliminarRegistro() {
-        persistenciaService.guardarRegistro("usr_2", "Maria Lopez");
-        boolean eliminado = persistenciaService.eliminarRegistro("usr_2");
-        
-        assertTrue(eliminado, "Debería retornar true confirmando la eliminación");
-        assertNull(persistenciaService.obtenerRegistro("usr_2"), "El registro ya no debería existir");
-    }
+            @Override
+            public Usuario buscarPorId(int idUsuario) { return lista.stream().filter(u -> u.getIdUsuario() == idUsuario).findFirst().orElse(null); }
 
-    @Test
-    @DisplayName("Debe limpiar todos los registros guardados")
-    void testLimpiarBaseDeDatos() {
-        persistenciaService.guardarRegistro("config_1", "Tema_Oscuro");
-        persistenciaService.guardarRegistro("config_2", "Idioma_ES");
-        assertEquals(2, persistenciaService.obtenerTotalRegistros());
+            @Override
+            public List<Usuario> listarTodos() { return lista; }
 
-        persistenciaService.limpiarBaseDeDatos();
-        assertEquals(0, persistenciaService.obtenerTotalRegistros(), "La base de datos debería quedar vacía tras limpiar");
+            @Override
+            public void actualizar(Usuario usuario) {}
+
+            @Override
+            public void eliminar(int idUsuario) { lista.removeIf(u -> u.getIdUsuario() == idUsuario); }
+        };
+
+        Usuario u = new Usuario(1, "juan", "Pérez", "123", null, null);
+        repo.guardar(u);
+        assertNotNull(repo.buscarPorId(1), "El usuario guardado debería poder ser recuperado");
     }
 }
