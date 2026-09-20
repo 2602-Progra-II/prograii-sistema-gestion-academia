@@ -1,20 +1,16 @@
-package com.academia;
-
+package sv.gestionacademica.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class IntegrationTest {
+public class AutenticacionServiceTest {
 
-    // Simulación del servicio a probar
-    // NOTA: Reemplazar 'AutenticacionService' por la clase real de tu proyecto si varía el nombre
     private AutenticacionService autenticacionService;
 
     @BeforeEach
     void setUp() {
-        // Inicialización antes de cada prueba
         autenticacionService = new AutenticacionService();
     }
 

@@ -1,4 +1,4 @@
-package com.academia;
+package sv.gestionacademica.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,8 +12,7 @@ public class UsuarioServiceTest {
 
     @BeforeEach
     void setUp() {
-        usuarioService = new UsuarioService();
-    }
+        usuarioService = new UsuarioService();}
 
     @Test
     @DisplayName("Debe registrar un nuevo usuario correctamente")
