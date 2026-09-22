@@ -1,10 +1,8 @@
-package sv.gestionacademica;
+package sv.gestionacademica.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
-
-import sv.gestionacademica.service.UsuarioService;
 
 public class UsuarioServiceTest {
 

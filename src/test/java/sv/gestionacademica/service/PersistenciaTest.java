@@ -1,4 +1,4 @@
-package sv.gestionacademica;
+package sv.gestionacademica.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
