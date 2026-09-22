@@ -1,4 +1,4 @@
-package main.java.sv.gestionacademica.entity;
+package sv.gestionacademica.entity;
 
 import java.time.LocalDateTime;
 
