@@ -1,11 +1,8 @@
-package com.academia;
+package sv.gestionacademica.service;
 import sv.gestionacademica.entity.Factura;
-import sv.gestionacademica.service.FacturaService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
-import sv.gestionacademica.entity.Factura;
-import sv.gestionacademica.service.FacturaService;
 
 import java.time.LocalDate;
 
