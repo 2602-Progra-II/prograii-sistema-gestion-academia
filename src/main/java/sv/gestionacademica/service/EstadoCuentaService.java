@@ -1,4 +1,5 @@
 package sv.gestionacademica.service;
+import sv.gestionacademica.entity.EstadoCuenta;
 
 import java.util.ArrayList;
 import java.util.List;
