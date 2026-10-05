@@ -1,7 +1,7 @@
 // package sv.gestionacademica.entity;
 
 // public class PeriodoAcademico {
-    
+
 // }
 package sv.gestionacademica.entity;
 
@@ -17,6 +17,9 @@ public class PeriodoAcademico {
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
     private EstadoPeriodo estado;
+
+    public PeriodoAcademico() {
+    }
 
     /** Crea un periodo nuevo (id lo asigna quien lo persista). Nace PLANIFICADO. */
     public PeriodoAcademico(String nombrePeriodo, LocalDate fechaInicio, LocalDate fechaFin) {
