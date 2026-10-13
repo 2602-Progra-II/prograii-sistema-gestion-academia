@@ -384,35 +384,35 @@ El diagrama se mantiene en Mermaid para que GitHub pueda renderizarlo directamen
 
 ```mermaid
 gantt
-    title Entrega 3 — Cronograma acelerado (13 al 26 de octubre de 2026)
+    title Entrega 3 — Cronograma y responsables (13–26 oct. 2026)
     dateFormat YYYY-MM-DD
     axisFormat %d %b
     tickInterval 1day
 
     section Diseño y datos
-    Auditoría E2 y arquitectura       :a1, 2026-10-13, 2d
-    Modelo relacional y scripts SQL   :a2, 2026-10-13, 3d
-    DataSource y pool                 :a3, 2026-10-14, 3d
+    Auditoría + arquitectura (Edgard)       :a1, 2026-10-13, 2d
+    Modelo BD + SQL (Roberto)               :a2, 2026-10-13, 3d
+    DataSource + pool (Fransheska)           :a3, 2026-10-14, 3d
 
     section Desarrollo técnico
-    JDBC y repositories               :a4, 2026-10-15, 5d
-    POO avanzada                      :a5, 2026-10-14, 5d
-    Integración funcional             :a6, 2026-10-17, 5d
-    Concurrencia integrada con BD     :a7, 2026-10-17, 5d
-    Excepciones y refactorización     :a8, 2026-10-19, 4d
+    JDBC + repositories (José Luis, Edenilson) :a4, 2026-10-15, 5d
+    POO avanzada (Jorge)                      :a5, 2026-10-14, 5d
+    Integración funcional (Gerardo, Walter)   :a6, 2026-10-17, 5d
+    Concurrencia + BD (Bryan)                 :a7, 2026-10-17, 5d
+    Excepciones + refactorización (Amílcar)   :a8, 2026-10-19, 4d
 
     section Calidad y documentación
-    Pruebas unitarias e integración   :a9, 2026-10-15, 9d
-    UML y documentación               :a10, 2026-10-19, 6d
-    README                            :a11, 2026-10-22, 3d
-    Git y GitHub (continuo)           :a12, 2026-10-13, 12d
+    Pruebas unitarias + integración (Josue)  :a9, 2026-10-15, 9d
+    UML + documentación (Edgard)              :a10, 2026-10-19, 6d
+    README (Edgard)                           :a11, 2026-10-22, 3d
+    Git + GitHub (todo el equipo)             :a12, 2026-10-13, 12d
 
     section Cierre
-    Freeze de funcionalidades        :milestone, m1, 2026-10-23, 0d
-    Prueba limpia desde cero          :a13, 2026-10-24, 1d
-    Correcciones finales              :a14, 2026-10-25, 1d
-    Ensayo de defensa                 :a15, 2026-10-23, 3d
-    Entrega final                     :milestone, m2, 2026-10-26, 0d
+    Freeze de funcionalidades                 :milestone, m1, 2026-10-23, 0d
+    Prueba limpia desde cero (todo el equipo) :a13, 2026-10-24, 1d
+    Correcciones finales (líderes de frente)  :a14, 2026-10-25, 1d
+    Ensayo de defensa (todo el equipo)        :a15, 2026-10-23, 3d
+    Entrega final                             :milestone, m2, 2026-10-26, 0d
 ```
 
 ## 7.3 Hitos de control obligatorios
