@@ -1,73 +1,48 @@
-package com.academia;
+package sv.gestionacademica.service;
 
-import java.util.ArrayList;
+import sv.gestionacademica.entity.MaterialDidactico;
+import sv.gestionacademica.entity.ActividadEvaluativa;
+
 import java.util.List;
 import java.util.Optional;
 
 public class MaterialDidacticoService {
 
-    public static class MaterialDidactico {
-        private String id;
-        private String titulo;
-        private String descripcion;
-        private String urlEnlace;
+    private final MaterialService materialService;
+    private final ActividadService actividadService;
 
-        public MaterialDidactico(String id, String titulo, String descripcion, String urlEnlace) {
-            this.id = id;
-            this.titulo = titulo;
-            this.descripcion = descripcion;
-            this.urlEnlace = urlEnlace;
-        }
-
-        public String getId() { return id; }
-        public String getTitulo() { return titulo; }
-        public String getDescripcion() { return descripcion; }
-        public String getUrlEnlace() { return urlEnlace; }
+    public MaterialDidacticoService() {
+        this.materialService = new MaterialService();
+        this.actividadService = new ActividadService();
     }
 
-    public static class ActividadEvaluativa {
-        private String id;
-        private String nombre;
-        private double ponderacion;
-        private String fechaEntrega;
-
-        public ActividadEvaluativa(String id, String nombre, double ponderacion, String fechaEntrega) {
-            this.id = id;
-            this.nombre = nombre;
-            this.ponderacion = ponderacion;
-            this.fechaEntrega = fechaEntrega;
-        }
-
-        public String getId() { return id; }
-        public String getNombre() { return nombre; }
-        public double getPonderacion() { return ponderacion; }
-        public String getFechaEntrega() { return fechaEntrega; }
+    public MaterialDidacticoService(MaterialService materialService, ActividadService actividadService) {
+        this.materialService = materialService;
+        this.actividadService = actividadService;
     }
-
-    private final List<MaterialDidactico> materiales = new ArrayList<>();
-    private final List<ActividadEvaluativa> actividades = new ArrayList<>();
 
     public void registrarMaterial(MaterialDidactico material) {
-        materiales.add(material);
+        materialService.registrarMaterial(material);
     }
 
     public List<MaterialDidactico> obtenerTodosLosMateriales() {
-        return materiales;
+        return materialService.obtenerTodosLosMateriales();
     }
 
     public Optional<MaterialDidactico> buscarMaterialPorId(String id) {
-        return materiales.stream().filter(m -> m.getId().equals(id)).findFirst();
+        return materialService.buscarMaterialPorId(id);
     }
 
+    // Métodos para ActividadEvaluativa
     public void registrarActividad(ActividadEvaluativa actividad) {
-        actividades.add(actividad);
+        actividadService.registrarActividad(actividad);
     }
 
     public List<ActividadEvaluativa> obtenerTodasLasActividades() {
-        return actividades;
+        return actividadService.obtenerTodasLasActividades();
     }
 
     public Optional<ActividadEvaluativa> buscarActividadPorId(String id) {
-        return actividades.stream().filter(a -> a.getId().equals(id)).findFirst();
+        return actividadService.buscarActividadPorId(id);
     }
 }
