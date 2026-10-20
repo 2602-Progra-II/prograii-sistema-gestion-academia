@@ -1,15 +1,17 @@
 package sv.gestionacademica.entity;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Objects;
 
-public class ActividadEvaluativa implements Serializable {
+public class ActividadEvaluativa implements Serializable, Identificable<String> {
     private static final long serialVersionUID = 1L;
 
     private String id;
     private String nombre;
     private double ponderacion;
     private String fechaEntrega;
+    private String descripcion;
 
     public ActividadEvaluativa() {
     }
@@ -21,6 +23,16 @@ public class ActividadEvaluativa implements Serializable {
         this.fechaEntrega = fechaEntrega;
     }
 
+    // Constructor de compatibilidad para subclases (Examen, Proyecto, Tarea)
+    public ActividadEvaluativa(int idActividad, String nombreActividad, String descripcion, LocalDate fechaLimite, double ponderacion) {
+        this.id = String.valueOf(idActividad);
+        this.nombre = nombreActividad;
+        this.descripcion = descripcion;
+        this.fechaEntrega = fechaLimite != null ? fechaLimite.toString() : null;
+        this.ponderacion = ponderacion;
+    }
+
+    @Override
     public String getId() {
         return id;
     }
@@ -51,6 +63,22 @@ public class ActividadEvaluativa implements Serializable {
 
     public void setFechaEntrega(String fechaEntrega) {
         this.fechaEntrega = fechaEntrega;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    // Metodos de compatibilidad para subclases
+    public boolean estaVencida() {
+        return false;
+    }
+
+    public void mostrarDetalles() {
     }
 
     @Override

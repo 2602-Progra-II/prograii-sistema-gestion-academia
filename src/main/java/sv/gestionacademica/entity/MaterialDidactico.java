@@ -3,7 +3,7 @@ package sv.gestionacademica.entity;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class MaterialDidactico implements Serializable {
+public class MaterialDidactico implements Serializable, Identificable<String> {
     private static final long serialVersionUID = 1L;
 
     private String id;
