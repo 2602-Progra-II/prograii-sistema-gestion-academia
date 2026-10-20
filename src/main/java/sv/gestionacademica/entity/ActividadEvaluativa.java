@@ -1,46 +1,106 @@
 package sv.gestionacademica.entity;
 
+import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.Objects;
 
-public abstract class ActividadEvaluativa {
+public class ActividadEvaluativa implements Serializable, Identificable<String> {
+    private static final long serialVersionUID = 1L;
 
-    private int idActividad;
-    private String nombreActividad;
-    private String descripcion;
-    private LocalDate fechaLimite;
+    private String id;
+    private String nombre;
     private double ponderacion;
+    private String fechaEntrega;
+    private String descripcion;
 
     public ActividadEvaluativa() {
     }
 
-    public ActividadEvaluativa(int idActividad, String nombreActividad, String descripcion,
-                               LocalDate fechaLimite, double ponderacion) {
-        this.idActividad = idActividad;
-        this.nombreActividad = nombreActividad;
+    public ActividadEvaluativa(String id, String nombre, double ponderacion, String fechaEntrega) {
+        this.id = id;
+        this.nombre = nombre;
+        this.ponderacion = ponderacion;
+        this.fechaEntrega = fechaEntrega;
+    }
+
+    // Constructor de compatibilidad para subclases (Examen, Proyecto, Tarea)
+    public ActividadEvaluativa(int idActividad, String nombreActividad, String descripcion, LocalDate fechaLimite, double ponderacion) {
+        this.id = String.valueOf(idActividad);
+        this.nombre = nombreActividad;
         this.descripcion = descripcion;
-        this.fechaLimite = fechaLimite;
+        this.fechaEntrega = fechaLimite != null ? fechaLimite.toString() : null;
         this.ponderacion = ponderacion;
     }
 
-    public boolean estaVencida() {
-        return LocalDate.now().isAfter(fechaLimite);
+    @Override
+    public String getId() {
+        return id;
     }
 
-    // Cada tipo de actividad calcula su nota final a su manera
-    public abstract double calcularNotaFinal(double notaObtenida);
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    public int getIdActividad() { return idActividad; }
-    public void setIdActividad(int idActividad) { this.idActividad = idActividad; }
+    public String getNombre() {
+        return nombre;
+    }
 
-    public String getNombreActividad() { return nombreActividad; }
-    public void setNombreActividad(String nombreActividad) { this.nombreActividad = nombreActividad; }
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public double getPonderacion() {
+        return ponderacion;
+    }
 
-    public LocalDate getFechaLimite() { return fechaLimite; }
-    public void setFechaLimite(LocalDate fechaLimite) { this.fechaLimite = fechaLimite; }
+    public void setPonderacion(double ponderacion) {
+        this.ponderacion = ponderacion;
+    }
 
-    public double getPonderacion() { return ponderacion; }
-    public void setPonderacion(double ponderacion) { this.ponderacion = ponderacion; }
+    public String getFechaEntrega() {
+        return fechaEntrega;
+    }
+
+    public void setFechaEntrega(String fechaEntrega) {
+        this.fechaEntrega = fechaEntrega;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    // Metodos de compatibilidad para subclases
+    public boolean estaVencida() {
+        return false;
+    }
+
+    public void mostrarDetalles() {
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ActividadEvaluativa that = (ActividadEvaluativa) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "ActividadEvaluativa{" +
+                "id='" + id + '\'' +
+                ", nombre='" + nombre + '\'' +
+                ", ponderacion=" + ponderacion +
+                ", fechaEntrega='" + fechaEntrega + '\'' +
+                '}';
+    }
 }
