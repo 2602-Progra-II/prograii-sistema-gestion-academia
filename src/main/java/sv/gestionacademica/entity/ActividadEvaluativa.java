@@ -68,6 +68,11 @@ public class ActividadEvaluativa implements Serializable {
 
     @Override
     public String toString() {
-        return "ActividadEvaluativa [id=" + id + ", nombre=" + nombre + ", ponderacion=" + ponderacion + "%, fechaEntrega=" + fechaEntrega + "]";
+        return "ActividadEvaluativa{" +
+                "id='" + id + '\'' +
+                ", nombre='" + nombre + '\'' +
+                ", ponderacion=" + ponderacion +
+                ", fechaEntrega='" + fechaEntrega + '\'' +
+                '}';
     }
 }
