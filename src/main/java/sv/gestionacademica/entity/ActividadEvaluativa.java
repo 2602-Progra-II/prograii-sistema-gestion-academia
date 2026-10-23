@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 
-public class ActividadEvaluativa implements Serializable, Identificable<String> {
+public abstract class ActividadEvaluativa implements Serializable, Identificable<String> {
     private static final long serialVersionUID = 1L;
 
     private String id;
@@ -31,6 +31,8 @@ public class ActividadEvaluativa implements Serializable, Identificable<String> 
         this.fechaEntrega = fechaLimite != null ? fechaLimite.toString() : null;
         this.ponderacion = ponderacion;
     }
+
+    public abstract double calcularNotaFinal(double notaObtenida);
 
     @Override
     public String getId() {
