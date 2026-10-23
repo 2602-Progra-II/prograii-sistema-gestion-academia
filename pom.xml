@@ -28,7 +28,23 @@
             <scope>test</scope>
         </dependency>
 
+
+        <!-- Pool de conexiones -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>6.3.0</version>
+        </dependency>
+
+        <!-- Driver JDBC oficial para SQL Server -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>12.10.0.jre11</version>
+        </dependency>
+
     </dependencies>
+
 
     <build>
 
