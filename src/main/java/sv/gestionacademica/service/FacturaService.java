@@ -2,13 +2,14 @@ package sv.gestionacademica.service;
 
 import sv.gestionacademica.entity.Factura;
 import sv.gestionacademica.repository.FacturaRepository;
+import sv.gestionacademica.repository.FacturaRepositoryImpl;
 
 public class FacturaService {
 
     private FacturaRepository facturaRepository;
 
     public FacturaService() {
-        facturaRepository = new FacturaRepository();
+        this.facturaRepository = new FacturaRepositoryImpl();
     }
 
     public boolean registrarFactura(Factura factura) {

@@ -6,12 +6,13 @@ import sv.gestionacademica.entity.ActividadEvaluativa;
 import sv.gestionacademica.exception.ActividadInvalidaException;
 import sv.gestionacademica.exception.ActividadNoEncontradaException;
 import sv.gestionacademica.repository.ActividadRepository;
+import sv.gestionacademica.repository.ActividadRepositoryImpl;
 
 public class ActividadService {
     private final ActividadRepository actividadRepository;
 
     public ActividadService() {
-        this.actividadRepository = new ActividadRepository();
+        this.actividadRepository = new ActividadRepositoryImpl();
     }
 
     public ActividadService(ActividadRepository actividadRepository) {

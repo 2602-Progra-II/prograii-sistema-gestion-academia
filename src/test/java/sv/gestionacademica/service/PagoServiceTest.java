@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import sv.gestionacademica.entity.Pago;
 import sv.gestionacademica.repository.PagoRepository;
+import sv.gestionacademica.repository.PagoRepositoryImpl;
 
 import java.time.LocalDate;
 
@@ -14,8 +15,8 @@ public class PagoServiceTest {
     private PagoService pagoService;
 
     @BeforeEach
-    public void setUp() {
-        pagoRepository = new PagoRepository();
+    void setUp() {
+        pagoRepository = new PagoRepositoryImpl(); // Cambiado de new PagoRepository()
         pagoService = new PagoService(pagoRepository);
     }
 

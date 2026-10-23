@@ -1,0 +1,163 @@
+package sv.gestionacademica.repository;
+
+import sv.gestionacademica.entity.ActividadEvaluativa;
+import sv.gestionacademica.persistence.DataSourceConfig;
+
+import java.sql.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+public class ActividadRepositoryImpl implements ActividadRepository {
+
+    @Override
+    public ActividadEvaluativa save(ActividadEvaluativa actividad) {
+        String sql = "INSERT INTO actividad_evaluativa (nombre_actividad, descripcion, fecha_limite, ponderacion) VALUES (?, ?, ?, ?)";
+
+        try (Connection conn = DataSourceConfig.getDataSource().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            pstmt.setString(1, actividad.getNombre());
+            pstmt.setString(2, actividad.getDescripcion());
+
+            if (actividad.getFechaEntrega() != null && !actividad.getFechaEntrega().isEmpty()) {
+                pstmt.setObject(3, LocalDate.parse(actividad.getFechaEntrega()));
+            } else {
+                pstmt.setNull(3, Types.DATE);
+            }
+
+            pstmt.setDouble(4, actividad.getPonderacion());
+
+            pstmt.executeUpdate();
+
+            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    actividad.setId(String.valueOf(generatedKeys.getInt(1)));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al guardar la actividad evaluativa en la base de datos", e);
+        }
+        return actividad;
+    }
+
+    @Override
+    public Optional<ActividadEvaluativa> findById(String id) {
+        String sql = "SELECT id_actividad, nombre_actividad, descripcion, fecha_limite, ponderacion FROM actividad_evaluativa WHERE id_actividad = ?";
+
+        try (Connection conn = DataSourceConfig.getDataSource().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, Integer.parseInt(id));
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapearActividad(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al buscar la actividad por ID", e);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public List<ActividadEvaluativa> findAll() {
+        List<ActividadEvaluativa> actividades = new ArrayList<>();
+        String sql = "SELECT id_actividad, nombre_actividad, descripcion, fecha_limite, ponderacion FROM actividad_evaluativa";
+
+        try (Connection conn = DataSourceConfig.getDataSource().getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                actividades.add(mapearActividad(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al listar las actividades evaluativas", e);
+        }
+        return actividades;
+    }
+
+    @Override
+    public void update(ActividadEvaluativa actividad) {
+        String sql = "UPDATE actividad_evaluativa SET nombre_actividad = ?, descripcion = ?, fecha_limite = ?, ponderacion = ? WHERE id_actividad = ?";
+
+        try (Connection conn = DataSourceConfig.getDataSource().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, actividad.getNombre());
+            pstmt.setString(2, actividad.getDescripcion());
+
+            if (actividad.getFechaEntrega() != null && !actividad.getFechaEntrega().isEmpty()) {
+                pstmt.setObject(3, LocalDate.parse(actividad.getFechaEntrega()));
+            } else {
+                pstmt.setNull(3, Types.DATE);
+            }
+
+            pstmt.setDouble(4, actividad.getPonderacion());
+            pstmt.setInt(5, Integer.parseInt(actividad.getId()));
+
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al actualizar la actividad evaluativa", e);
+        }
+    }
+
+    @Override
+    public boolean deleteById(String id) {
+        String sql = "DELETE FROM actividad_evaluativa WHERE id_actividad = ?";
+
+        try (Connection conn = DataSourceConfig.getDataSource().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, Integer.parseInt(id));
+            int filasAfectadas = pstmt.executeUpdate();
+            return filasAfectadas > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al eliminar la actividad evaluativa", e);
+        }
+    }
+
+    @Override
+    public boolean existsById(String id) {
+        String sql = "SELECT COUNT(1) FROM actividad_evaluativa WHERE id_actividad = ?";
+
+        try (Connection conn = DataSourceConfig.getDataSource().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, Integer.parseInt(id));
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al verificar si existe la actividad evaluativa", e);
+        }
+        return false;
+    }
+
+    private ActividadEvaluativa mapearActividad(ResultSet rs) throws SQLException {
+        int idActividad = rs.getInt("id_actividad");
+        String nombreActividad = rs.getString("nombre_actividad");
+        String descripcion = rs.getString("descripcion");
+
+        LocalDate fechaLimite = null;
+        Date fechaSql = rs.getDate("fecha_limite");
+        if (fechaSql != null) {
+            fechaLimite = fechaSql.toLocalDate();
+        }
+
+        double ponderacion = rs.getDouble("ponderacion");
+
+        return new ActividadEvaluativa(idActividad, nombreActividad, descripcion, fechaLimite, ponderacion) {
+            @Override
+            public double calcularNotaFinal(double notaObtenida) {
+                return (notaObtenida * ponderacion) / 100.0;
+            }
+        };
+    }
+}
