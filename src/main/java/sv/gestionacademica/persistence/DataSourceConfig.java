@@ -53,9 +53,9 @@ public final class DataSourceConfig {
 
             switch (name) {
                 case "DB_URL":
-                    return "jdbc:sqlserver://localhost\\SQLEXPRESS:1433;databaseName=gestion_academica;encrypt=true;trustServerCertificate=true;";
+                    return "jdbc:sqlserver://localhost:1433;databaseName=sistema_gestion_academia;encrypt=true;trustServerCertificate=true;";
                 case "DB_USER":
-                    return "sa";
+                    return "academia_app";
                 case "DB_PASSWORD":
                     return "Academia2026_Segura!";
                 default:

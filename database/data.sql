@@ -34,9 +34,9 @@ GO
 
 -- 5. Matrículas (Alineado con MatriculaRepositoryImpl)
 INSERT INTO matricula (fecha_matricula, estado_matricula, id_estudiante, id_curso) VALUES
-('2026-02-02', 'ACTIVA', 'roberto.gutierrez@academia.edu', 1),
-('2026-02-02', 'ACTIVA', 'roberto.gutierrez@academia.edu', 2),
-('2026-02-03', 'ACTIVA', 'fransheska.perez@academia.edu', 1);
+('2026-02-02', 'ACTIVA', '3', 1),
+('2026-02-02', 'ACTIVA', '3', 2),
+('2026-02-03', 'ACTIVA', '4', 1);
 GO
 
 -- 6. Material Didáctico (Alineado con MaterialRepositoryImpl)

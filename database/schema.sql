@@ -5,10 +5,8 @@
 -- =========================================================================
 
 IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'sistema_gestion_academia')
-BEGIN
     CREATE DATABASE sistema_gestion_academia;
 GO
-
 USE sistema_gestion_academia;
 GO
 

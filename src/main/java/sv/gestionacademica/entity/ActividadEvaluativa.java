@@ -106,6 +106,5 @@ public abstract class ActividadEvaluativa implements Serializable, Identificable
                 '}';
     }
 
-    // Tarea: si se entrega tarde, pierde 20% de la nota
-    public abstract double calcularNotaFinal(double notaObtenida);
+
 }
