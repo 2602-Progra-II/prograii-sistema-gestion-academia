@@ -1,8 +1,8 @@
 package sv.gestionacademica.repository;
 
+import sv.gestionacademica.entity.Curso;
 import sv.gestionacademica.entity.Matricula;
 import sv.gestionacademica.entity.Usuario;
-import sv.gestionacademica.entity.Curso;
 import sv.gestionacademica.enums.EstadoMatricula;
 import sv.gestionacademica.persistence.DataSourceConfig;
 
@@ -21,13 +21,17 @@ public class MatriculaRepositoryImpl implements MatriculaRepository {
         try (Connection conn = DataSourceConfig.getDataSource().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            pstmt.setObject(1, matricula.getFechaMatricula());
+            pstmt.setObject(1, matricula.getFechaMatricula() != null ? matricula.getFechaMatricula() : LocalDate.now());
             pstmt.setString(2, matricula.getEstadoMatricula() != null ? matricula.getEstadoMatricula().name() : "ACTIVA");
 
-            // Suponiendo que la entidad Usuario y Curso tienen métodos para obtener sus identificadores
-            pstmt.setString(3, matricula.getEstudiante() != null ? matricula.getEstudiante().getNombreUsuario() : null);
-            if (matricula.getCurso() != null) {
-                pstmt.setInt(4, matricula.getCurso().getIdCurso()); // Cambiado de getId() a getIdCurso()
+            if (matricula.getEstudiante() != null && matricula.getEstudiante().getIdUsuario() > 0) {
+                pstmt.setInt(3, matricula.getEstudiante().getIdUsuario());
+            } else {
+                pstmt.setNull(3, Types.INTEGER);
+            }
+
+            if (matricula.getCurso() != null && matricula.getCurso().getIdCurso() > 0) {
+                pstmt.setInt(4, matricula.getCurso().getIdCurso());
             } else {
                 pstmt.setNull(4, Types.INTEGER);
             }
@@ -91,7 +95,11 @@ public class MatriculaRepositoryImpl implements MatriculaRepository {
         try (Connection conn = DataSourceConfig.getDataSource().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, idEstudiante);
+            try {
+                pstmt.setInt(1, Integer.parseInt(idEstudiante));
+            } catch (NumberFormatException e) {
+                pstmt.setString(1, idEstudiante);
+            }
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
@@ -134,9 +142,15 @@ public class MatriculaRepositoryImpl implements MatriculaRepository {
 
             pstmt.setObject(1, matricula.getFechaMatricula());
             pstmt.setString(2, matricula.getEstadoMatricula() != null ? matricula.getEstadoMatricula().name() : "ACTIVA");
-            pstmt.setString(3, matricula.getEstudiante() != null ? matricula.getEstudiante().getNombreUsuario() : null);
-            if (matricula.getCurso() != null) {
-                pstmt.setInt(4, matricula.getCurso().getIdCurso()); // Cambiado de getId() a getIdCurso()
+
+            if (matricula.getEstudiante() != null && matricula.getEstudiante().getIdUsuario() > 0) {
+                pstmt.setInt(3, matricula.getEstudiante().getIdUsuario());
+            } else {
+                pstmt.setNull(3, Types.INTEGER);
+            }
+
+            if (matricula.getCurso() != null && matricula.getCurso().getIdCurso() > 0) {
+                pstmt.setInt(4, matricula.getCurso().getIdCurso());
             } else {
                 pstmt.setNull(4, Types.INTEGER);
             }
@@ -156,8 +170,7 @@ public class MatriculaRepositoryImpl implements MatriculaRepository {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, idMatricula);
-            int filasAfectadas = pstmt.executeUpdate();
-            return filasAfectadas > 0;
+            return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new RuntimeException("Error al eliminar la matrícula", e);
         }
@@ -202,9 +215,12 @@ public class MatriculaRepositoryImpl implements MatriculaRepository {
             }
         }
 
-        // Nota: puedes instanciar objetos Usuario o Curso básicos según lo que devuelvan las FKs de la BD
-        Usuario estudiante = null; // O cargar de UsuarioRepository si lo requieres
-        Curso curso = null;       // O cargar de CursoRepository si lo requieres
+        int idEstudiante = rs.getInt("id_estudiante");
+        int idCurso = rs.getInt("id_curso");
+
+        // Instanciación pasando los argumentos requeridos por los constructores completos
+        Usuario estudiante = new Usuario(idEstudiante, null, null, null, null, null);
+        Curso curso = new Curso(idCurso, null, null, null, null, 0, null);
 
         return new Matricula(idMatricula, fechaMatricula, estado, estudiante, curso);
     }

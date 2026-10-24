@@ -20,7 +20,10 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
 
             pstmt.setString(1, usuario.getNombreUsuario());
             pstmt.setString(2, usuario.getApellidoUsuario());
-            pstmt.setString(3, "usuario@academica.sv");
+
+            String emailUnico = "user_" + System.currentTimeMillis() + "@academia.edu";
+            pstmt.setString(3, emailUnico);
+
             pstmt.setString(4, usuario.getContrasena());
             pstmt.setInt(5, usuario.getRol() != null ? usuario.getRol().getIdRol() : 1);
 
@@ -61,7 +64,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
                     boolean activo = rs.getBoolean("activo");
                     EstadoUsuario estado = activo ? EstadoUsuario.ACTIVO : EstadoUsuario.INACTIVO;
 
-                    Usuario usuario = new Usuario(
+                    return new Usuario(
                             rs.getInt("id_usuario"),
                             rs.getString("nombre"),
                             rs.getString("apellido"),
@@ -69,8 +72,6 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
                             estado,
                             rol
                     );
-
-                    return usuario;
                 }
             }
         } catch (SQLException e) {

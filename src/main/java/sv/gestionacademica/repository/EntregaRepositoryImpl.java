@@ -13,6 +13,26 @@ public class EntregaRepositoryImpl implements EntregaRepository {
 
     @Override
     public EntregaEvaluacion guardar(EntregaEvaluacion entrega) {
+        if (entrega.getIdEntrega() > 0) {
+            String updateSql = "UPDATE entrega_evaluacion SET ruta_archivo_entrega = ?, fecha_entrega = ?, calificacion = ?, observaciones = ?, id_actividad = ?, id_estudiante = ? WHERE id_entrega = ?";
+            try (Connection conn = DataSourceConfig.getDataSource().getConnection();
+                 PreparedStatement pstmt = conn.prepareStatement(updateSql)) {
+
+                pstmt.setString(1, entrega.getRutaArchivoEntrega());
+                pstmt.setObject(2, entrega.getFechaEntrega());
+                pstmt.setDouble(3, entrega.getCalificacion());
+                pstmt.setString(4, entrega.getObservaciones());
+                pstmt.setInt(5, entrega.getIdActividad());
+                pstmt.setString(6, entrega.getIdEstudiante());
+                pstmt.setInt(7, entrega.getIdEntrega());
+
+                pstmt.executeUpdate();
+            } catch (SQLException e) {
+                throw new RuntimeException("Error al actualizar la entrega de evaluación en la base de datos", e);
+            }
+            return entrega;
+        }
+
         String sql = "INSERT INTO entrega_evaluacion (ruta_archivo_entrega, fecha_entrega, calificacion, observaciones, id_actividad, id_estudiante) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DataSourceConfig.getDataSource().getConnection();

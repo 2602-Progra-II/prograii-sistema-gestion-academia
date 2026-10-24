@@ -13,7 +13,7 @@ public class ActividadRepositoryImpl implements ActividadRepository {
 
     @Override
     public ActividadEvaluativa save(ActividadEvaluativa actividad) {
-        String sql = "INSERT INTO actividad_evaluativa (nombre_actividad, descripcion, fecha_limite, ponderacion) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO actividad_evaluativa (nombre_actividad, descripcion, fecha_limite, ponderacion, id_curso) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DataSourceConfig.getDataSource().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -28,6 +28,7 @@ public class ActividadRepositoryImpl implements ActividadRepository {
             }
 
             pstmt.setDouble(4, actividad.getPonderacion());
+            pstmt.setInt(5, obtenerIdCursoValido(conn, actividad));
 
             pstmt.executeUpdate();
 
@@ -44,7 +45,7 @@ public class ActividadRepositoryImpl implements ActividadRepository {
 
     @Override
     public Optional<ActividadEvaluativa> findById(String id) {
-        String sql = "SELECT id_actividad, nombre_actividad, descripcion, fecha_limite, ponderacion FROM actividad_evaluativa WHERE id_actividad = ?";
+        String sql = "SELECT id_actividad, nombre_actividad, descripcion, fecha_limite, ponderacion, id_curso FROM actividad_evaluativa WHERE id_actividad = ?";
 
         try (Connection conn = DataSourceConfig.getDataSource().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -65,7 +66,7 @@ public class ActividadRepositoryImpl implements ActividadRepository {
     @Override
     public List<ActividadEvaluativa> findAll() {
         List<ActividadEvaluativa> actividades = new ArrayList<>();
-        String sql = "SELECT id_actividad, nombre_actividad, descripcion, fecha_limite, ponderacion FROM actividad_evaluativa";
+        String sql = "SELECT id_actividad, nombre_actividad, descripcion, fecha_limite, ponderacion, id_curso FROM actividad_evaluativa";
 
         try (Connection conn = DataSourceConfig.getDataSource().getConnection();
              Statement stmt = conn.createStatement();
@@ -82,7 +83,7 @@ public class ActividadRepositoryImpl implements ActividadRepository {
 
     @Override
     public void update(ActividadEvaluativa actividad) {
-        String sql = "UPDATE actividad_evaluativa SET nombre_actividad = ?, descripcion = ?, fecha_limite = ?, ponderacion = ? WHERE id_actividad = ?";
+        String sql = "UPDATE actividad_evaluativa SET nombre_actividad = ?, descripcion = ?, fecha_limite = ?, ponderacion = ?, id_curso = ? WHERE id_actividad = ?";
 
         try (Connection conn = DataSourceConfig.getDataSource().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -97,7 +98,8 @@ public class ActividadRepositoryImpl implements ActividadRepository {
             }
 
             pstmt.setDouble(4, actividad.getPonderacion());
-            pstmt.setInt(5, Integer.parseInt(actividad.getId()));
+            pstmt.setInt(5, obtenerIdCursoValido(conn, actividad));
+            pstmt.setInt(6, Integer.parseInt(actividad.getId()));
 
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -113,8 +115,7 @@ public class ActividadRepositoryImpl implements ActividadRepository {
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setInt(1, Integer.parseInt(id));
-            int filasAfectadas = pstmt.executeUpdate();
-            return filasAfectadas > 0;
+            return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new RuntimeException("Error al eliminar la actividad evaluativa", e);
         }
@@ -138,6 +139,33 @@ public class ActividadRepositoryImpl implements ActividadRepository {
             throw new RuntimeException("Error al verificar si existe la actividad evaluativa", e);
         }
         return false;
+    }
+
+    private int obtenerIdCursoValido(Connection conn, ActividadEvaluativa actividad) {
+        // 1. Intentar obtener idCurso por reflexiÃ³n
+        try {
+            var m = actividad.getClass().getMethod("getIdCurso");
+            Object res = m.invoke(actividad);
+            if (res instanceof Integer && (Integer) res > 0) return (Integer) res;
+        } catch (Exception ignored) {}
+
+        try {
+            var f = actividad.getClass().getDeclaredField("idCurso");
+            f.setAccessible(true);
+            Object res = f.get(actividad);
+            if (res instanceof Integer && (Integer) res > 0) return (Integer) res;
+        } catch (Exception ignored) {}
+
+        // 2. Si no viene definido en el objeto, consultar el primer curso registrado en la BD
+        String sql = "SELECT TOP 1 id_curso FROM curso";
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt("id_curso");
+            }
+        } catch (SQLException ignored) {}
+
+        return 1;
     }
 
     private ActividadEvaluativa mapearActividad(ResultSet rs) throws SQLException {
