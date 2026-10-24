@@ -10,9 +10,12 @@ public interface UsuarioRepository {
 
     Usuario buscarPorId(int idUsuario);
 
+    /** Busca por email (credencial de login). Devuelve null si no existe. */
+    Usuario buscarPorEmail(String email);
+
     List<Usuario> listarTodos();
 
     void actualizar(Usuario usuario);
 
     void eliminar(int idUsuario);
-}
+}

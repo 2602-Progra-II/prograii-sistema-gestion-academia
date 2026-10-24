@@ -27,9 +27,10 @@ INSERT INTO periodo_academico (nombre_periodo, fecha_inicio, fecha_fin, estado) 
 GO
 
 -- 4. Cursos
-INSERT INTO curso (nombre_curso, codigo_curso, descripcion, id_periodo) VALUES
-('Programación II', 'PROG-II', 'Curso avanzado de programación en Java, estructuras y bases de datos.', 1),
-('Cálculo Diferencial', 'MAT-CAL', 'Estudio de límites, derivadas, optimización y teoremas fundamentales.', 1);
+-- id_instructor = 2 (Ana García, Profesor)
+INSERT INTO curso (nombre_curso, codigo_curso, descripcion, id_periodo, estado, id_instructor) VALUES
+('Programación II', 'PROG-II', 'Curso avanzado de programación en Java, estructuras y bases de datos.', 1, 'ACTIVO', 2),
+('Cálculo Diferencial', 'MAT-CAL', 'Estudio de límites, derivadas, optimización y teoremas fundamentales.', 1, 'ACTIVO', 2);
 GO
 
 -- 5. Matrículas (Alineado con MatriculaRepositoryImpl)
@@ -53,17 +54,17 @@ GO
 
 -- 8. Entregas de Evaluación (Alineado con EntregaRepositoryImpl)
 INSERT INTO entrega_evaluacion (ruta_archivo_entrega, fecha_entrega, calificacion, observaciones, id_actividad, id_estudiante) VALUES
-('/uploads/entregas/roberto_prog2.zip', '2026-10-18', 0.0, 'Pendiente de revisión', 1, 'roberto.gutierrez@academia.edu');
+('/uploads/entregas/roberto_prog2.zip', '2026-10-18', 0.0, 'Pendiente de revisión', 1, '3');
 GO
 
--- 9. Facturas (Alineado con FacturaRepositoryImpl)
-INSERT INTO factura (numero_factura, fecha_emision, monto_total) VALUES
-('FAC-2026-001', '2026-02-05', 150.00);
+-- 9. Pagos (id_estudiante = id de usuario como texto; id_matricula enlaza con la matricula pagada)
+INSERT INTO pago (monto, fecha_pago, ruta_comprobante, estado_pago, id_estudiante, id_asesor_validador, id_matricula) VALUES
+(150.00, '2026-02-05', '/comprobantes/pago_001.pdf', 'APROBADO', '3', '1', 1);
 GO
 
--- 10. Pagos (Alineado con PagoRepositoryImpl)
-INSERT INTO pago (monto, fecha_pago, ruta_comprobante, estado_pago, id_estudiante, id_asesor_validador) VALUES
-(150.00, '2026-02-05', '/comprobantes/pago_001.pdf', 'PENDIENTE', 'roberto.gutierrez@academia.edu', 'admin@academia.edu');
+-- 10. Facturas (cada factura enlaza con el pago que la origina)
+INSERT INTO factura (numero_factura, fecha_emision, monto_total, id_pago) VALUES
+('FAC-2026-000001', '2026-02-05', 150.00, 1);
 GO
 
 -- 11. Detalle de Pago

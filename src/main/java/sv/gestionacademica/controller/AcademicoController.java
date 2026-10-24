@@ -65,10 +65,6 @@ public class AcademicoController {
     // Pendiente: se completa cuando existan los servicios de otras ramas.
     // ---------------------------------------------------------------
 
-    public void matricularEstudiante() {
-        throw new UnsupportedOperationException(
-                "Pendiente: se implementa cuando se integre MatriculaService (otra rama).");
-    }
 
     public void publicarMaterial() {
         throw new UnsupportedOperationException(

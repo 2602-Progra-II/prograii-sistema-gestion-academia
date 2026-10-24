@@ -7,6 +7,7 @@
 IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'sistema_gestion_academia')
     CREATE DATABASE sistema_gestion_academia;
 GO
+
 USE sistema_gestion_academia;
 GO
 
@@ -19,8 +20,8 @@ GO
 
 -- 2. Eliminar tablas en orden inverso a sus dependencias
 IF OBJECT_ID('dbo.detalle_pago', 'U') IS NOT NULL DROP TABLE dbo.detalle_pago;
-IF OBJECT_ID('dbo.pago', 'U') IS NOT NULL DROP TABLE dbo.pago;
 IF OBJECT_ID('dbo.factura', 'U') IS NOT NULL DROP TABLE dbo.factura;
+IF OBJECT_ID('dbo.pago', 'U') IS NOT NULL DROP TABLE dbo.pago;
 IF OBJECT_ID('dbo.entrega_evaluacion', 'U') IS NOT NULL DROP TABLE dbo.entrega_evaluacion;
 IF OBJECT_ID('dbo.actividad_evaluativa', 'U') IS NOT NULL DROP TABLE dbo.actividad_evaluativa;
 IF OBJECT_ID('dbo.material_didactico', 'U') IS NOT NULL DROP TABLE dbo.material_didactico;
@@ -66,7 +67,10 @@ CREATE TABLE curso (
                        codigo_curso VARCHAR(20) NOT NULL UNIQUE,
                        descripcion VARCHAR(MAX) NULL,
     id_periodo INT NOT NULL,
-    CONSTRAINT FK_Curso_Periodo FOREIGN KEY (id_periodo) REFERENCES periodo_academico(id_periodo)
+    estado VARCHAR(20) NOT NULL DEFAULT 'ACTIVO',
+    id_instructor INT NULL,
+    CONSTRAINT FK_Curso_Periodo FOREIGN KEY (id_periodo) REFERENCES periodo_academico(id_periodo),
+    CONSTRAINT FK_Curso_Instructor FOREIGN KEY (id_instructor) REFERENCES usuario(id_usuario)
 );
 GO
 
@@ -78,6 +82,13 @@ CREATE TABLE matricula (
                            id_curso INT NOT NULL,
                            CONSTRAINT FK_Matricula_Curso FOREIGN KEY (id_curso) REFERENCES curso(id_curso)
 );
+GO
+
+-- Un estudiante no puede tener dos matriculas vigentes (no canceladas) en el mismo curso.
+-- Protege la regla de negocio incluso con matriculas simultaneas (concurrencia).
+CREATE UNIQUE INDEX UX_matricula_estudiante_curso_vigente
+    ON matricula (id_estudiante, id_curso)
+    WHERE estado_matricula <> 'CANCELADA';
 GO
 
 CREATE TABLE material_didactico (
@@ -113,14 +124,6 @@ CREATE TABLE entrega_evaluacion (
 );
 GO
 
-CREATE TABLE factura (
-                         id_factura INT IDENTITY(1,1) PRIMARY KEY,
-                         numero_factura VARCHAR(50) NOT NULL UNIQUE,
-                         fecha_emision DATE NOT NULL,
-                         monto_total DECIMAL(10,2) NOT NULL
-);
-GO
-
 CREATE TABLE pago (
                       id_pago INT IDENTITY(1,1) PRIMARY KEY,
                       monto DECIMAL(10,2) NOT NULL,
@@ -128,7 +131,19 @@ CREATE TABLE pago (
                       ruta_comprobante VARCHAR(MAX) NULL,
     estado_pago VARCHAR(20) DEFAULT 'PENDIENTE',
     id_estudiante VARCHAR(50) NOT NULL,
-    id_asesor_validador VARCHAR(50) NULL
+    id_asesor_validador VARCHAR(50) NULL,
+    id_matricula INT NULL,
+    CONSTRAINT FK_Pago_Matricula FOREIGN KEY (id_matricula) REFERENCES matricula(id_matricula) ON DELETE SET NULL
+);
+GO
+
+CREATE TABLE factura (
+                         id_factura INT IDENTITY(1,1) PRIMARY KEY,
+                         numero_factura VARCHAR(50) NOT NULL UNIQUE,
+                         fecha_emision DATE NOT NULL,
+                         monto_total DECIMAL(10,2) NOT NULL,
+    id_pago INT NULL,
+    CONSTRAINT FK_Factura_Pago FOREIGN KEY (id_pago) REFERENCES pago(id_pago) ON DELETE SET NULL
 );
 GO
 
@@ -137,6 +152,6 @@ CREATE TABLE detalle_pago (
                               id_pago INT NOT NULL,
                               concepto VARCHAR(150) NOT NULL,
                               subtotal DECIMAL(10,2) NOT NULL,
-                              CONSTRAINT FK_DetallePago_Pago FOREIGN KEY (id_pago) REFERENCES pago(id_pago)
+                              CONSTRAINT FK_DetallePago_Pago FOREIGN KEY (id_pago) REFERENCES pago(id_pago) ON DELETE CASCADE
 );
 GO

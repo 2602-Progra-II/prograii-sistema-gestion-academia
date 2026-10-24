@@ -8,6 +8,7 @@ public class Factura {
     private String numeroFactura;
     private LocalDate fechaEmision;
     private double montoTotal;
+    private Integer idPago;
 
     public Factura(int idFactura, String numeroFactura, LocalDate fechaEmision, double montoTotal) {
         this.idFactura = idFactura;
@@ -46,5 +47,14 @@ public class Factura {
 
     public void setMontoTotal(double montoTotal) {
         this.montoTotal = montoTotal;
+    }
+
+    /** Pago que origino la factura (null si no esta asociada a un pago). */
+    public Integer getIdPago() {
+        return idPago;
+    }
+
+    public void setIdPago(Integer idPago) {
+        this.idPago = idPago;
     }
 }

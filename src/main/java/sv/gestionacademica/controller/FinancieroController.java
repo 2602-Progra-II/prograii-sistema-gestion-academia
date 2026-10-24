@@ -20,7 +20,11 @@ public class FinancieroController {
             System.err.println("Error al registrar el pago: " + e.getMessage());
         }
     }
-
+    /**
+     * @deprecated Solo cambia el estado del pago. No activa la matrícula ni emite la factura.
+     * Usar {@link MatriculaController#aprobarPago(int, String)}, que lo hace en una transacción.
+     */
+    @Deprecated
     public void aprobarPago(int idPago, String asesorId) {
         try {
             pagoService.aprobarPago(idPago, asesorId);
@@ -30,6 +34,11 @@ public class FinancieroController {
         }
     }
 
+    /**
+     * @deprecated Solo cambia el estado del pago. No cancela la matrícula.
+     * Usar {@link MatriculaController#rechazarPago(int, String)}.
+     */
+    @Deprecated
     public void rechazarPago(int idPago, String asesorId) {
         try {
             pagoService.rechazarPago(idPago, asesorId);

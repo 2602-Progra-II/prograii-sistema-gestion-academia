@@ -11,6 +11,7 @@ public class Pago {
     private EstadoPago estadoPago;
     private String idEstudiante;
     private String idAsesorValidador;
+    private Integer idMatricula;
 
     public Pago(int idPago, double monto, LocalDate fechaPago, String rutaComprobante, String idEstudiante) {
         this.idPago = idPago;
@@ -54,4 +55,8 @@ public class Pago {
 
     public String getIdAsesorValidador() { return idAsesorValidador; }
     public void setIdAsesorValidador(String idAsesorValidador) { this.idAsesorValidador = idAsesorValidador; }
+
+    /** Matricula que este pago cubre (null si el pago no esta asociado a una matricula). */
+    public Integer getIdMatricula() { return idMatricula; }
+    public void setIdMatricula(Integer idMatricula) { this.idMatricula = idMatricula; }
 }

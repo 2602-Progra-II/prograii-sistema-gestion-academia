@@ -21,8 +21,13 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
             pstmt.setString(1, usuario.getNombreUsuario());
             pstmt.setString(2, usuario.getApellidoUsuario());
 
-            String emailUnico = "user_" + System.currentTimeMillis() + "@academia.edu";
-            pstmt.setString(3, emailUnico);
+            // El email es la credencial de login; solo se genera uno si no se proporcionó.
+            String email = usuario.getEmail();
+            if (email == null || email.isBlank()) {
+                email = "user_" + System.currentTimeMillis() + "@academia.edu";
+                usuario.setEmail(email);
+            }
+            pstmt.setString(3, email.trim().toLowerCase());
 
             pstmt.setString(4, usuario.getContrasena());
             pstmt.setInt(5, usuario.getRol() != null ? usuario.getRol().getIdRol() : 1);
@@ -44,7 +49,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
 
     @Override
     public Usuario buscarPorId(int idUsuario) {
-        String sql = "SELECT u.id_usuario, u.nombre, u.apellido, u.password, u.activo, " +
+        String sql = "SELECT u.id_usuario, u.nombre, u.apellido, u.email, u.password, u.activo, " +
                 "r.id_rol, r.nombre_rol, r.descripcion " +
                 "FROM usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE u.id_usuario = ?";
 
@@ -55,23 +60,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    Rol rol = new Rol(
-                            rs.getInt("id_rol"),
-                            rs.getString("nombre_rol"),
-                            rs.getString("descripcion")
-                    );
-
-                    boolean activo = rs.getBoolean("activo");
-                    EstadoUsuario estado = activo ? EstadoUsuario.ACTIVO : EstadoUsuario.INACTIVO;
-
-                    return new Usuario(
-                            rs.getInt("id_usuario"),
-                            rs.getString("nombre"),
-                            rs.getString("apellido"),
-                            rs.getString("password"),
-                            estado,
-                            rol
-                    );
+                    return mapearUsuario(rs);
                 }
             }
         } catch (SQLException e) {
@@ -81,9 +70,34 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
     }
 
     @Override
+    public Usuario buscarPorEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return null;
+        }
+        String sql = "SELECT u.id_usuario, u.nombre, u.apellido, u.email, u.password, u.activo, " +
+                "r.id_rol, r.nombre_rol, r.descripcion " +
+                "FROM usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE LOWER(u.email) = ?";
+
+        try (Connection conn = DataSourceConfig.getDataSource().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, email.trim().toLowerCase());
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapearUsuario(rs);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error al buscar el usuario por email", e);
+        }
+        return null;
+    }
+
+    @Override
     public List<Usuario> listarTodos() {
         List<Usuario> usuarios = new ArrayList<>();
-        String sql = "SELECT u.id_usuario, u.nombre, u.apellido, u.password, u.activo, " +
+        String sql = "SELECT u.id_usuario, u.nombre, u.apellido, u.email, u.password, u.activo, " +
                 "r.id_rol, r.nombre_rol, r.descripcion " +
                 "FROM usuario u INNER JOIN rol r ON u.id_rol = r.id_rol";
 
@@ -92,25 +106,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-                Rol rol = new Rol(
-                        rs.getInt("id_rol"),
-                        rs.getString("nombre_rol"),
-                        rs.getString("descripcion")
-                );
-
-                boolean activo = rs.getBoolean("activo");
-                EstadoUsuario estado = activo ? EstadoUsuario.ACTIVO : EstadoUsuario.INACTIVO;
-
-                Usuario usuario = new Usuario(
-                        rs.getInt("id_usuario"),
-                        rs.getString("nombre"),
-                        rs.getString("apellido"),
-                        rs.getString("password"),
-                        estado,
-                        rol
-                );
-
-                usuarios.add(usuario);
+                usuarios.add(mapearUsuario(rs));
             }
         } catch (SQLException e) {
             throw new RuntimeException("Error al listar los usuarios", e);
@@ -153,5 +149,27 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
         } catch (SQLException e) {
             throw new RuntimeException("Error al eliminar el usuario", e);
         }
+    }
+
+    private Usuario mapearUsuario(ResultSet rs) throws SQLException {
+        Rol rol = new Rol(
+                rs.getInt("id_rol"),
+                rs.getString("nombre_rol"),
+                rs.getString("descripcion")
+        );
+
+        boolean activo = rs.getBoolean("activo");
+        EstadoUsuario estado = activo ? EstadoUsuario.ACTIVO : EstadoUsuario.INACTIVO;
+
+        Usuario usuario = new Usuario(
+                rs.getInt("id_usuario"),
+                rs.getString("nombre"),
+                rs.getString("apellido"),
+                rs.getString("password"),
+                estado,
+                rol
+        );
+        usuario.setEmail(rs.getString("email"));
+        return usuario;
     }
 }

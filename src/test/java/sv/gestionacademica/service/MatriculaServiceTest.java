@@ -1,5 +1,5 @@
 package sv.gestionacademica.Service;
-
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+@Disabled("Borra todas las tablas de la BD real. Reactivar cuando exista una BD de pruebas separada.")
 class MatriculaServiceTest {
 
     private MatriculaService matriculaService;

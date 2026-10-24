@@ -29,6 +29,13 @@
         </dependency>
 
 
+        <!-- Logger simple (quita el aviso de SLF4J en consola) -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+
         <!-- Pool de conexiones -->
         <dependency>
             <groupId>com.zaxxer</groupId>
