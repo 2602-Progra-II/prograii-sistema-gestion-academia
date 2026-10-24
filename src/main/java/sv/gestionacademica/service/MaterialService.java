@@ -6,12 +6,13 @@ import sv.gestionacademica.entity.MaterialDidactico;
 import sv.gestionacademica.exception.MaterialInvalidoException;
 import sv.gestionacademica.exception.MaterialNoEncontradoException;
 import sv.gestionacademica.repository.MaterialRepository;
+import sv.gestionacademica.repository.MaterialRepositoryImpl;
 
 public class MaterialService {
     private final MaterialRepository materialRepository;
 
     public MaterialService() {
-        this.materialRepository = new MaterialRepository();
+        this.materialRepository = new MaterialRepositoryImpl();
     }
 
     public MaterialService(MaterialRepository materialRepository) {
