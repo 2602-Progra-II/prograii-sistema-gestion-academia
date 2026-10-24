@@ -1,4 +1,3 @@
-
 package sv.gestionacademica.persistence;
 
 import com.zaxxer.hikari.HikariConfig;
@@ -51,9 +50,19 @@ public final class DataSourceConfig {
         String value = System.getenv(name);
 
         if (value == null || value.isBlank()) {
-            throw new IllegalStateException(
-                    "Falta la variable de entorno: " + name
-            );
+
+            switch (name) {
+                case "DB_URL":
+                    return "jdbc:sqlserver://localhost\\SQLEXPRESS:1433;databaseName=gestion_academica;encrypt=true;trustServerCertificate=true;";
+                case "DB_USER":
+                    return "sa";
+                case "DB_PASSWORD":
+                    return "Academia2026_Segura!";
+                default:
+                    throw new IllegalStateException(
+                            "Falta la variable de entorno: " + name
+                    );
+            }
         }
 
         return value;
