@@ -5,6 +5,7 @@ import sv.gestionacademica.entity.EstadoCuenta;
 import java.util.ArrayList;
 import java.util.List;
 
+import sv.gestionacademica.entity.EstadoCuenta;
 public class EstadoCuentaService {
     private List<EstadoCuenta> listaCuentas = new ArrayList<>();
 
