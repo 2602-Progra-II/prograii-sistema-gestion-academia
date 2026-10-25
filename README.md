@@ -29,7 +29,7 @@ Es una aplicación de consola en Java para gestionar la parte académica y admin
 |---|---|
 | Java 21 | Lenguaje (records, switch expressions, streams) |
 | Maven | Dependencias, compilación y pruebas |
-| SQL Server / SQL Server Express | Base de datos relacional |
+| Motor de base de datos | Azure SQL Database |
 | JDBC (`mssql-jdbc` 12.10) | Acceso a datos con `PreparedStatement` / `ResultSet` |
 | HikariCP 6.3 | Pool de conexiones (`DataSource`) |
 | JUnit 5 | Pruebas unitarias y de integración |
@@ -39,32 +39,45 @@ Es una aplicación de consola en Java para gestionar la parte académica y admin
 
 - **JDK 21** o superior.
 - **Maven 3.9+**, o IntelliJ IDEA, que trae Maven integrado.
-- **SQL Server 2019+** o SQL Server Express, con la **autenticación mixta** habilitada (SQL Server y Windows).
-- SQL Server Management Studio o Azure Data Studio para ejecutar los scripts.
+- Acceso a una instancia de Azure SQL Database con la base `GestionAcademicaDB` configurada.
+- Variables de entorno `DB_URL`, `DB_USER` y `DB_PASSWORD` configuradas.
+- JDK compatible con la versión de Java definida en el proyecto.
+
 
 ## Configuración de la base de datos
 
-Ejecuta los scripts de `database/` **en este orden**, con una cuenta administradora (por ejemplo `sa`):
+La aplicación utiliza **Azure SQL Database** como único destino de conexión. No requiere una instancia local de SQL Server.
 
-| # | Script | Qué hace |
+Antes de ejecutar la aplicación, configura la base de datos `GestionAcademicaDB` en Azure y ejecuta los siguientes scripts desde una herramienta compatible con Azure SQL Database, como Azure Query Editor.
+
+| Orden | Script | Función |
 |---|---|---|
-| 1 | `schema.sql` | Crea la BD `sistema_gestion_academia` y todas las tablas. Se puede volver a ejecutar: borra y recrea todo. |
-| 2 | `usuario_app.sql` | Crea el login `academia_app` con el que se conecta la aplicación. Solo hace falta la primera vez. |
-| 3 | `data.sql` | Carga los datos de prueba: roles, usuarios, período, cursos, matrículas, actividades y pagos. |
+| 1 | `database/azure_schema.sql` | Crea las tablas, relaciones e índices necesarios para el sistema. |
+| 2 | `database/azure_data.sql` | Inserta los datos iniciales de demostración. Ejecutar solo cuando corresponda cargar esos datos. |
+| 3 | `database/azure_usuario_app.sql` | Crea el usuario de aplicación y le asigna permisos de lectura y escritura. Ejecutar una sola vez, sustituyendo el marcador de contraseña por una clave segura. |
 
-### Conexión
+**Precaución:** antes de ejecutar los scripts de creación o carga, verifica su contenido y el estado de la base de datos para evitar duplicar registros o afectar datos existentes.
 
-`DataSourceConfig` lee estas variables de entorno. Si no existen, usa los valores por defecto:
+### Configuración de la conexión
 
-| Variable | Valor por defecto |
+La clase `DataSourceConfig` obtiene las credenciales exclusivamente de estas variables de entorno:
+
+| Variable | Valor |
 |---|---|
-| `DB_URL` | `jdbc:sqlserver://localhost:1433;databaseName=sistema_gestion_academia;encrypt=true;trustServerCertificate=true;` |
-| `DB_USER` | `academia_app` |
-| `DB_PASSWORD` | `Academia2026_Segura!` |
+| `DB_URL` | Cadena JDBC de Azure SQL Database. |
+| `DB_USER` | Usuario de aplicación de la base de datos. |
+| `DB_PASSWORD` | Contraseña del usuario de aplicación. |
 
-Si tu instancia es SQL Express con nombre (por ejemplo `localhost\SQLEXPRESS`), define `DB_URL` con ese host o habilita TCP/IP en el puerto 1433.
+Las tres variables son obligatorias. La aplicación no utiliza valores predeterminados ni credenciales incorporadas en el código.
 
-**Pool (HikariCP):** máximo 10 conexiones, mínimo 2 inactivas, espera de 30 s, inactividad de 10 min y vida máxima de 30 min. La justificación está en `docs/documentos/datasource-pool.md 3`. Para verificar la conexión, ejecuta `sv.gestionacademica.persistence.DataSourceCheck`.
+Configura estas variables en la configuración de ejecución de IntelliJ IDEA o en el entorno desde el que ejecutes la aplicación.
+
+La variable `DB_URL` debe contener la cadena JDBC del servidor Azure correspondiente y especificar la base de datos `GestionAcademicaDB`, utilizando cifrado de conexión.
+
+**Seguridad:**
+- No publiques contraseñas ni cadenas de conexión con credenciales en el repositorio.
+- No incluyas contraseñas reales en los scripts SQL.
+- Utiliza un usuario de aplicación con los permisos mínimos necesarios.
 
 ## Ejecución
 

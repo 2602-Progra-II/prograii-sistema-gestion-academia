@@ -45,22 +45,26 @@ import java.util.Scanner;
  * Arma las capas (Repository -> Service -> Controller -> Menu), pide login
  * y muestra el menu segun el rol del usuario.
  *
- * Requisitos: BD creada con database/schema.sql y database/data.sql.
- * Conexion: variables de entorno DB_URL, DB_USER y DB_PASSWORD
- * (si no existen, DataSourceConfig usa sus valores por defecto).
+ * Requisitos: BD creada con database/azure_schema.sql y database/azure_data.sql.
+ * Conexion: variables de entorno DB_URL, DB_USER y DB_PASSWORD.
+ * Las tres variables son obligatorias; no existen valores por defecto.
  */
 public class Main {
 
     public static void main(String[] args) {
         try {
-            // Armar la aplicacion ya abre el pool (getDataSource): si la BD no responde,
-            // el error cae en el catch de abajo y no como stack trace.
             construirAplicacion().ejecutar();
         } catch (RuntimeException e) {
-            System.err.println("No se pudo conectar con la base de datos o iniciar la aplicación.");
+            System.err.println(
+                    "No se pudo conectar con la base de datos o iniciar la aplicación."
+            );
             System.err.println("Causa: " + causaRaiz(e).getMessage());
-            System.err.println("Verifica que SQL Server esté activo, que ejecutaste schema.sql, usuario_app.sql "
-                    + "y data.sql, y las variables DB_URL, DB_USER y DB_PASSWORD.");
+            System.err.println(
+                    "Verifica que Azure SQL Database esté disponible, " +
+                            "que hayas configurado DB_URL, DB_USER y DB_PASSWORD " +
+                            "y que el usuario tenga los permisos necesarios. " +
+                            "La base debe estar preparada con los scripts de Azure."
+            );
         } finally {
             DataSourceConfig.close();
         }
