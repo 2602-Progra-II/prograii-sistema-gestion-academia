@@ -46,25 +46,17 @@ public final class DataSourceConfig {
         }
     }
 
+
     private static String requireEnv(String name) {
         String value = System.getenv(name);
 
         if (value == null || value.isBlank()) {
-
-            switch (name) {
-                case "DB_URL":
-                    return "jdbc:sqlserver://localhost:1433;databaseName=sistema_gestion_academia;encrypt=true;trustServerCertificate=true;";
-                case "DB_USER":
-                    return "academia_app";
-                case "DB_PASSWORD":
-                    return "Academia2026_Segura!";
-                default:
-                    throw new IllegalStateException(
-                            "Falta la variable de entorno: " + name
-                    );
-            }
+            throw new IllegalStateException(
+                    "Falta la variable de entorno: " + name
+            );
         }
 
         return value;
     }
+
 }
