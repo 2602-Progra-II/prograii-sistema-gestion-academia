@@ -2,44 +2,18 @@ package sv.gestionacademica.repository;
 
 import sv.gestionacademica.entity.Factura;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.Connection;
+import java.util.List;
 
-public class FacturaRepository {
+public interface FacturaRepository {
+    void guardar(Factura factura);
+    Factura buscarPorId(int idFactura);
+    Factura buscarPorNumero(String numeroFactura);
+    List<Factura> listarTodas();
+    void actualizar(Factura factura);
+    void eliminar(int idFactura);
 
-    private Map<Integer, Factura> facturas = new HashMap<>();
-
-    public boolean guardar(Factura factura) {
-        if (factura == null) {
-            throw new IllegalArgumentException("La factura no puede ser nula");
-        }
-
-        if (facturas.containsKey(factura.getIdFactura())) {
-            return false;
-        }
-
-        facturas.put(factura.getIdFactura(), factura);
-        return true;
-    }
-
-    public Factura buscarPorId(int idFactura) {
-        return facturas.get(idFactura);
-    }
-
-    public boolean eliminar(int idFactura) {
-        if (facturas.containsKey(idFactura)) {
-            facturas.remove(idFactura);
-            return true;
-        }
-
-        return false;
-    }
-
-    public int obtenerTotalFacturas() {
-        return facturas.size();
-    }
-
-    public void limpiar() {
-        facturas.clear();
-    }
+    // Variantes que participan en una transaccion (no cierran la Connection).
+    void guardar(Connection con, Factura factura);
+    Factura buscarPorPago(Connection con, int idPago);
 }

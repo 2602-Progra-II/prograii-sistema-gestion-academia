@@ -1,40 +1,23 @@
 package sv.gestionacademica.repository;
 
 import sv.gestionacademica.entity.Pago;
-import java.util.ArrayList;
+
+import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
 
-public class PagoRepository {
-    private final List<Pago> pagos = new ArrayList<>();
+public interface PagoRepository {
+    void guardar(Pago pago);
+    Optional<Pago> buscarPorId(int id);
+    List<Pago> listarPendientes();
+    /** Todos los pagos de un estudiante (cualquier estado). Lo usa el estado de cuenta. */
+    List<Pago> listarPorEstudiante(String idEstudiante);
+    void actualizar(Pago pagoActualizado);
 
-    public void guardar(Pago pago) {
-        if (pago == null) {
-            throw new IllegalArgumentException("El pago no puede ser nulo.");
-        }
-        pagos.add(pago);
-    }
-
-    public Optional<Pago> buscarPorId(int id) {
-        return pagos.stream().filter(p -> p.getIdPago() == id).findFirst();
-    }
-
-    public List<Pago> listarPendientes() {
-        List<Pago> pendientes = new ArrayList<>();
-        for (Pago p : pagos) {
-            if (p.estaPendiente()) {
-                pendientes.add(p);
-            }
-        }
-        return pendientes;
-    }
-
-    public void actualizar(Pago pagoActualizado) {
-        for (int i = 0; i < pagos.size(); i++) {
-            if (pagos.get(i).getIdPago() == pagoActualizado.getIdPago()) {
-                pagos.set(i, pagoActualizado);
-                return;
-            }
-        }
-    }
+    // Variantes que participan en una transaccion (no cierran la Connection).
+    void guardar(Connection con, Pago pago);
+    Optional<Pago> buscarPorId(Connection con, int id);
+    /** Igual que buscarPorId pero bloquea la fila hasta el commit/rollback (evita aprobar dos veces a la vez). */
+    Optional<Pago> buscarPorIdBloqueando(Connection con, int id);
+    void actualizar(Connection con, Pago pagoActualizado);
 }

@@ -40,6 +40,14 @@ public class EvaluacionService {
         entregaRepository.guardar(entrega);
     }
 
+    public java.util.Optional<EntregaEvaluacion> buscarEntrega(int idEntrega) {
+        return entregaRepository.buscarPorId(idEntrega);
+    }
+
+    public List<EntregaEvaluacion> listarEntregasDeActividad(int idActividad) {
+        return entregaRepository.listarPorActividad(idActividad);
+    }
+
     public List<EntregaEvaluacion> consultarCalificaciones(Usuario estudiante) {
         if (estudiante == null) {
             throw new IllegalArgumentException("El estudiante no puede ser nulo.");

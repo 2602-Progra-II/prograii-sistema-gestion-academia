@@ -8,6 +8,8 @@ public class Sesion {
     private LocalDateTime fechaInicio;
     private LocalDateTime fechaFin;
     private boolean activa;
+    /** Usuario autenticado dueño de la sesion (de aqui sale el rol y el id del asesor). */
+    private Usuario usuario;
 
     public Sesion(int idSesion, LocalDateTime fechaInicio,
                   LocalDateTime fechaFin, boolean activa) {
@@ -51,5 +53,13 @@ public class Sesion {
 
     public void setActiva(boolean activa) {
         this.activa = activa;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 }

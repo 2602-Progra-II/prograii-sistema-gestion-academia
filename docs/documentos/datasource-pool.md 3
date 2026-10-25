@@ -1,0 +1,38 @@
+
+# DataSource y Pool de Conexiones
+
+## Objetivo
+Proporcionar un DataSource reutilizable para los componentes JDBC
+del Sistema de Gestión Académica.
+
+## Tecnologías
+- Java
+- HikariCP 6.3.0
+- Microsoft JDBC Driver para SQL Server 12.10.0.jre11
+- SQL Server Express
+
+## Configuración
+La clase `DataSourceConfig` configura el pool de conexiones.
+
+Variables de entorno requeridas:
+- `DB_URL`: URL JDBC de la base de datos.
+- `DB_USER`: usuario de conexión.
+- `DB_PASSWORD`: contraseña de conexión.
+
+No se deben guardar credenciales en el repositorio.
+
+## Parámetros del pool
+- Máximo de conexiones: 10
+- Conexiones mínimas inactivas: 2
+- Tiempo de espera: 30 segundos
+- Tiempo de inactividad: 10 minutos
+- Vida máxima de conexión: 30 minutos
+
+## Uso
+Las conexiones deben utilizarse con try-with-resources
+para devolverlas al pool al terminar.
+
+## Prueba
+`DataSourceCheck` comprueba la obtención y devolución de
+conexiones y el cierre del pool cuando hay una base de datos
+configurada y accesible.

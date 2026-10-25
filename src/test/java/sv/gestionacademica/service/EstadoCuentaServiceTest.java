@@ -1,9 +1,10 @@
 package sv.gestionacademica.service;
 
+import sv.gestionacademica.entity.EstadoCuenta;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-
+import sv.gestionacademica.entity.EstadoCuenta;
 class EstadoCuentaServiceTest {
 
     private EstadoCuentaService service;

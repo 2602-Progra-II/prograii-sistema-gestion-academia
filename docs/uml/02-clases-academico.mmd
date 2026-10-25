@@ -1,113 +1,92 @@
 classDiagram
+%% Modulo academico: periodos, cursos, material, actividades (herencia) y evaluaciones
 
-class Usuario {
-    -String idUsuario
-    -String nombreUsuario
-    -String apellidoUsuario
-    -EstadoUsuario estado
+class AcademicoController {
+    +registrarPeriodo(PeriodoAcademico) PeriodoAcademico
+    +activarPeriodo(int) PeriodoAcademico
+    +finalizarPeriodo(int) PeriodoAcademico
+    +registrarCurso(Curso) Curso
+    +asignarInstructor(int, int) Curso
+    +publicarMaterial(Usuario, int, String, String, String) MaterialDidactico
+    +crearActividad(Usuario, int, TipoActividad, String, String, LocalDate, double) ActividadEvaluativa
+    +entregarActividad(Usuario, int, String) EntregaEvaluacion
+    +calificarActividad(Usuario, int, double, String) EntregaEvaluacion
+    +consultarCalificaciones(Usuario) List~EntregaEvaluacion~
+    +cursosDelEstudiante(Usuario) List~Curso~
+    -exigirInstructorDelCurso(Usuario, Curso)
 }
 
-class Rol {
-    -int idRol
-    -String nombreRol
-    -String descripcion
-}
-
-class PeriodoAcademico {
-    -int idPeriodo
-    -String nombrePeriodo
-    -LocalDate fechaInicio
-    -LocalDate fechaFin
-    -EstadoPeriodo estado
-    +fechasValidas() boolean
-    +estaVigente() boolean
-}
-
-class Curso {
-    -int idCurso
-    -String codigoCurso
-    -String nombreCurso
-    -String descripcion
-    -EstadoCurso estado
-}
-
-    class Matricula {
-        -int idMatricula
-        -LocalDate fechaMatricula
-        -EstadoMatricula estadoMatricula
-    }
-
-    class EstadoMatricula {
-        <<enumeration>>
-        PENDIENTE_PAGO
-        ACTIVA
-        CANCELADA
-    }
-
-class MaterialDidactico {
-    -int idMaterial
-    -String tituloMaterial
-    -String rutaArchivo
-    -LocalDate fechaSubida
+class PeriodoAcademicoService
+class CursoService
+class MaterialService
+class ActividadService
+class EvaluacionService {
+    +entregarActividad(EntregaEvaluacion, Usuario) EntregaEvaluacion
+    +calificarActividad(EntregaEvaluacion, Usuario)
+    +buscarEntrega(int) Optional~EntregaEvaluacion~
+    +listarEntregasDeActividad(int) List~EntregaEvaluacion~
 }
 
 class ActividadEvaluativa {
-    -int idActividad
-    -String nombreActividad
-    -String descripcion
-    -LocalDate fechaLimite
-    -double ponderacion
-    +estaVencida() boolean
+    <<abstract>>
+    +calcularNotaFinal(double)* double
+    +calcularNotaFinal(double, LocalDate) double
+    +permiteEntregaTardia() boolean
+    +getTipo() TipoActividad
+    +calcularAporte(double) double
+    +estaVencidaPara(LocalDate) boolean
 }
-
-class EntregaEvaluacion {
-    -int idEntrega
-    -String rutaArchivoEntrega
-    -LocalDate fechaEntrega
-    -double calificacion
-    -String observaciones
-    +estaCalificada() boolean
+class Tarea {
+    +calcularNotaFinal(double, LocalDate) double  -20% si es tarde
+    +permiteEntregaTardia() boolean  true
 }
-
-class EstadoUsuario {
+class Examen {
+    +calcularNotaFinal(double) double
+    +estaAprobado(double) boolean
+}
+class Proyecto {
+    +calcularNotaFinal(double, LocalDate) double  +5% a tiempo
+}
+class TipoActividad {
     <<enumeration>>
-    ACTIVO
-    INACTIVO
+    TAREA
+    EXAMEN
+    PROYECTO
+    +crear(int, String, String, LocalDate, double)* ActividadEvaluativa
+    +desdeTexto(String)$ TipoActividad
 }
 
-class EstadoPeriodo {
-    <<enumeration>>
-    PLANIFICADO
-    ACTIVO
-    FINALIZADO
+class ActividadRepository {
+    <<interface>>
+}
+class ActividadRepositoryImpl
+class MaterialRepository {
+    <<interface>>
+}
+class EntregaRepository {
+    <<interface>>
+}
+class MatriculaRepository {
+    <<interface>>
 }
 
-class EstadoCurso {
-    <<enumeration>>
-    INACTIVO
-    ACTIVO
-}
+AcademicoController --> PeriodoAcademicoService
+AcademicoController --> CursoService
+AcademicoController --> MaterialService
+AcademicoController --> ActividadService
+AcademicoController --> EvaluacionService
+AcademicoController --> MatriculaRepository : valida matricula ACTIVA
+AcademicoController ..> TipoActividad : crea por tipo
 
+ActividadService --> ActividadRepository
+MaterialService --> MaterialRepository
+EvaluacionService --> EntregaRepository
+ActividadRepository <|.. ActividadRepositoryImpl
+ActividadRepositoryImpl ..> TipoActividad : mapea tipo_actividad
 
-Rol "1" <-- "0..*" Usuario : tiene
-
-PeriodoAcademico "1" <-- "0..*" Curso : contiene
-
-Usuario "0..1" <-- "0..*" Curso : instructor
-
-Usuario "1" <-- "0..*" Matricula : estudiante
-Curso "1" <-- "0..*" Matricula : curso
-
-Curso "1" *-- "0..*" MaterialDidactico : contiene
-
-Curso "1" *-- "0..*" ActividadEvaluativa : contiene
-
-ActividadEvaluativa "1" *-- "0..*" EntregaEvaluacion : recibe
-
-Usuario "1" <-- "0..*" EntregaEvaluacion : realiza
-
-
-Usuario --> EstadoUsuario
-PeriodoAcademico --> EstadoPeriodo
-Curso --> EstadoCurso
-    Matricula ..> EstadoMatricula
+ActividadEvaluativa <|-- Tarea
+ActividadEvaluativa <|-- Examen
+ActividadEvaluativa <|-- Proyecto
+TipoActividad ..> Tarea
+TipoActividad ..> Examen
+TipoActividad ..> Proyecto

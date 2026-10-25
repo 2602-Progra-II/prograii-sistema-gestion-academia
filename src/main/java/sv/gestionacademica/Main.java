@@ -1,83 +1,120 @@
 package sv.gestionacademica;
 
-import sv.gestionacademica.entity.Rol;
-import sv.gestionacademica.entity.Sesion;
-import sv.gestionacademica.entity.Usuario;
-import sv.gestionacademica.enums.EstadoUsuario;
+import sv.gestionacademica.controller.AcademicoController;
+import sv.gestionacademica.controller.LoginController;
+import sv.gestionacademica.controller.MatriculaController;
+import sv.gestionacademica.controller.UsuarioController;
+import sv.gestionacademica.menu.Consola;
+import sv.gestionacademica.menu.MenuAcademico;
+import sv.gestionacademica.menu.MenuPeriodosCursos;
+import sv.gestionacademica.menu.MenuPrincipal;
+import sv.gestionacademica.menu.MenuReportes;
+import sv.gestionacademica.menu.MenuUsuarios;
+import sv.gestionacademica.persistence.DataSourceConfig;
+import sv.gestionacademica.repository.CursoRepository;
+import sv.gestionacademica.repository.CursoRepositoryImpl;
+import sv.gestionacademica.repository.EntregaRepositoryImpl;
+import sv.gestionacademica.repository.FacturaRepository;
+import sv.gestionacademica.repository.FacturaRepositoryImpl;
+import sv.gestionacademica.repository.MatriculaRepository;
+import sv.gestionacademica.repository.MatriculaRepositoryImpl;
+import sv.gestionacademica.repository.PagoRepository;
+import sv.gestionacademica.repository.PagoRepositoryImpl;
+import sv.gestionacademica.repository.PeriodoAcademicoRepository;
+import sv.gestionacademica.repository.PeriodoAcademicoRepositoryImpl;
+import sv.gestionacademica.repository.RolRepositoryImpl;
+import sv.gestionacademica.repository.UsuarioRepository;
+import sv.gestionacademica.repository.UsuarioRepositoryImpl;
+import sv.gestionacademica.service.ActividadService;
+import sv.gestionacademica.service.AutenticacionServiceImpl;
+import sv.gestionacademica.service.CursoService;
+import sv.gestionacademica.service.EstadoCuentaService;
+import sv.gestionacademica.service.EvaluacionService;
+import sv.gestionacademica.service.FlujoMatriculaService;
+import sv.gestionacademica.service.MaterialService;
+import sv.gestionacademica.service.PeriodoAcademicoService;
+import sv.gestionacademica.service.ProcesoConcurrenteService;
+import sv.gestionacademica.service.ReporteService;
+import sv.gestionacademica.service.UsuarioServiceImpl;
 
-import java.time.LocalDateTime;
+import java.util.Scanner;
 
+/**
+ * Punto de entrada de la aplicacion.
+ *
+ * Arma las capas (Repository -> Service -> Controller -> Menu), pide login
+ * y muestra el menu segun el rol del usuario.
+ *
+ * Requisitos: BD creada con database/azure_schema.sql y database/azure_data.sql.
+ * Conexion: variables de entorno DB_URL, DB_USER y DB_PASSWORD.
+ * Las tres variables son obligatorias; no existen valores por defecto.
+ */
 public class Main {
 
     public static void main(String[] args) {
+        try {
+            construirAplicacion().ejecutar();
+        } catch (RuntimeException e) {
+            System.err.println(
+                    "No se pudo conectar con la base de datos o iniciar la aplicación."
+            );
+            System.err.println("Causa: " + causaRaiz(e).getMessage());
+            System.err.println(
+                    "Verifica que Azure SQL Database esté disponible, " +
+                            "que hayas configurado DB_URL, DB_USER y DB_PASSWORD " +
+                            "y que el usuario tenga los permisos necesarios. " +
+                            "La base debe estar preparada con los scripts de Azure."
+            );
+        } finally {
+            DataSourceConfig.close();
+        }
+    }
 
-        System.out.println("=== PRUEBA DE GESTIÓN ACADÉMICA ===");
+    /** Arma las capas Repository -> Service -> Controller -> Menu (inyeccion de dependencias manual). */
+    private static MenuPrincipal construirAplicacion() {
+        // Repositories (JDBC)
+        UsuarioRepository usuarios = new UsuarioRepositoryImpl();
+        CursoRepository cursos = new CursoRepositoryImpl();
+        PeriodoAcademicoRepository periodos = new PeriodoAcademicoRepositoryImpl();
+        MatriculaRepository matriculas = new MatriculaRepositoryImpl();
+        PagoRepository pagos = new PagoRepositoryImpl();
+        FacturaRepository facturas = new FacturaRepositoryImpl();
 
-        // 1. Crear un Rol
-        Rol rolEstudiante = new Rol(
-                1,
-                "Estudiante",
-                "Usuario con rol de estudiante"
-        );
+        // Services
+        FlujoMatriculaService flujo = new FlujoMatriculaService(
+                DataSourceConfig.getDataSource(), usuarios, cursos, periodos, matriculas, pagos, facturas);
+        EstadoCuentaService estadoCuenta = new EstadoCuentaService(pagos, usuarios);
+        ProcesoConcurrenteService concurrente = new ProcesoConcurrenteService(DataSourceConfig.getDataSource());
 
-        System.out.println("\n--- Rol ---");
-        System.out.println("ID: " + rolEstudiante.getIdRol());
-        System.out.println("Nombre: " + rolEstudiante.getNombreRol());
-        System.out.println("Descripción: " + rolEstudiante.getDescripcion());
+        // Controllers
+        LoginController login = new LoginController(new AutenticacionServiceImpl(usuarios));
+        MatriculaController matriculaController = new MatriculaController(flujo);
+        UsuarioController usuarioController = new UsuarioController(new UsuarioServiceImpl(usuarios));
+        AcademicoController academico = new AcademicoController(
+                new PeriodoAcademicoService(periodos), new CursoService(cursos, periodos),
+                new MaterialService(), new ActividadService(),
+                new EvaluacionService(new EntregaRepositoryImpl()), matriculas);
 
+        // Menus (todos comparten el mismo Scanner)
+        Scanner scanner = new Scanner(System.in);
+        Consola consola = new Consola(scanner);
 
-        // 2. Crear un Usuario
-        Usuario usuario = new Usuario(
-                101,
-                "Edgard",
-                "Granados",
-                "1234",
-                EstadoUsuario.ACTIVO,
-                rolEstudiante
-        );
+        return new MenuPrincipal(consola, login, cursos, matriculas)
+                // El asesor que aprueba/rechaza pagos es el usuario con sesion iniciada.
+                .setMenuCore(sesion -> new MenuCore(matriculaController, usuarios, cursos, pagos, matriculas,
+                        scanner, String.valueOf(sesion.getUsuario().getIdUsuario())).ejecutar())
+                .setMenuUsuarios(new MenuUsuarios(consola, usuarioController, usuarios, new RolRepositoryImpl()))
+                .setMenuPeriodosCursos(new MenuPeriodosCursos(consola, academico, cursos, usuarios))
+                .setMenuReportes(new MenuReportes(consola, estadoCuenta, new ReporteService(), pagos, facturas, periodos))
+                .setProcesoConcurrente(sesion -> concurrente.ejecutarProcesoConcurrente())
+                .setMenuAcademico(new MenuAcademico(consola, academico, cursos, usuarios));
+    }
 
-        System.out.println("\n--- Usuario ---");
-        System.out.println("ID: " + usuario.getIdUsuario());
-        System.out.println("Nombre: " + usuario.getNombreUsuario());
-        System.out.println("Apellido: " + usuario.getApellidoUsuario());
-        System.out.println("Estado: " + usuario.getEstado());
-        System.out.println("Rol: " + usuario.getRol().getNombreRol());
-
-
-        // 3. Modificar el Usuario
-        usuario.setNombreUsuario("Edgard Santiago");
-        usuario.setEstado(EstadoUsuario.INACTIVO);
-
-        System.out.println("\n--- Usuario modificado ---");
-        System.out.println("Nombre: " + usuario.getNombreUsuario());
-        System.out.println("Estado: " + usuario.getEstado());
-
-
-        // 4. Crear una Sesión
-        LocalDateTime inicio = LocalDateTime.now();
-
-        Sesion sesion = new Sesion(
-                1001,
-                inicio,
-                null,
-                true
-        );
-
-        System.out.println("\n--- Sesión ---");
-        System.out.println("ID: " + sesion.getIdSesion());
-        System.out.println("Fecha inicio: " + sesion.getFechaInicio());
-        System.out.println("Sesión activa: " + sesion.estaActiva());
-
-
-        // 5. Cerrar la Sesión
-        sesion.setFechaFin(LocalDateTime.now());
-        sesion.setActiva(false);
-
-        System.out.println("\n--- Sesión cerrada ---");
-        System.out.println("Fecha fin: " + sesion.getFechaFin());
-        System.out.println("Sesión activa: " + sesion.estaActiva());
-
-
-        System.out.println("\n=== PRUEBA FINALIZADA ===");
+    private static Throwable causaRaiz(Throwable e) {
+        Throwable t = e;
+        while (t.getCause() != null && t.getCause() != t) {
+            t = t.getCause();
+        }
+        return t;
     }
 }

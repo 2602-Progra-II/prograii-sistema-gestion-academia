@@ -1,54 +1,50 @@
 erDiagram
+%% Coincide con database/schema.sql (SQL Server)
 
     ROL {
         INT id_rol PK
         VARCHAR nombre_rol UK
         VARCHAR descripcion
     }
-
     USUARIO {
-        VARCHAR id_usuario PK
-        VARCHAR nombre_usuario UK
-        VARCHAR apellido_usuario
-        VARCHAR contrasena
-        VARCHAR estado
+        INT id_usuario PK
+        VARCHAR nombre
+        VARCHAR apellido
+        VARCHAR email UK "credencial de login"
+        VARCHAR password
         INT id_rol FK
+        BIT activo
     }
-
     PERIODO_ACADEMICO {
         INT id_periodo PK
-        VARCHAR nombre_periodo UK
+        VARCHAR nombre_periodo
         DATE fecha_inicio
         DATE fecha_fin
         VARCHAR estado
     }
-
     CURSO {
         INT id_curso PK
-        VARCHAR codigo_curso UK
         VARCHAR nombre_curso
+        VARCHAR codigo_curso UK
         VARCHAR descripcion
-        VARCHAR estado
         INT id_periodo FK
-        VARCHAR id_instructor FK
+        VARCHAR estado
+        INT id_instructor FK
     }
-
     MATRICULA {
         INT id_matricula PK
         DATE fecha_matricula
-        VARCHAR estado_Matricula
-        VARCHAR id_estudiante FK
+        VARCHAR estado_matricula
+        VARCHAR id_estudiante "id del usuario"
         INT id_curso FK
     }
-
     MATERIAL_DIDACTICO {
         INT id_material PK
-        VARCHAR titulo_material
-        VARCHAR ruta_archivo
-        DATE fecha_subida
+        VARCHAR titulo
+        VARCHAR descripcion
+        VARCHAR url_enlace
         INT id_curso FK
     }
-
     ACTIVIDAD_EVALUATIVA {
         INT id_actividad PK
         VARCHAR nombre_actividad
@@ -56,8 +52,8 @@ erDiagram
         DATE fecha_limite
         DECIMAL ponderacion
         INT id_curso FK
+        VARCHAR tipo_actividad "TAREA, EXAMEN o PROYECTO"
     }
-
     ENTREGA_EVALUACION {
         INT id_entrega PK
         VARCHAR ruta_archivo_entrega
@@ -65,57 +61,39 @@ erDiagram
         DECIMAL calificacion
         VARCHAR observaciones
         INT id_actividad FK
-        VARCHAR id_estudiante FK
+        VARCHAR id_estudiante "id del usuario"
     }
-
     PAGO {
         INT id_pago PK
         DECIMAL monto
         DATE fecha_pago
         VARCHAR ruta_comprobante
         VARCHAR estado_pago
-        VARCHAR id_estudiante FK
-        VARCHAR id_asesor_validador FK
+        VARCHAR id_estudiante "id del usuario"
+        VARCHAR id_asesor_validador "id del usuario"
+        INT id_matricula FK
     }
-
     FACTURA {
         INT id_factura PK
         VARCHAR numero_factura UK
         DATE fecha_emision
         DECIMAL monto_total
         INT id_pago FK
-        VARCHAR id_estudiante FK
     }
-
-    SESION {
-        INT id_sesion PK
-        DATETIME fecha_inicio
-        DATETIME fecha_fin
-        BOOLEAN activa
-        VARCHAR id_usuario FK
+    DETALLE_PAGO {
+        INT id_detalle PK
+        INT id_pago FK
+        VARCHAR concepto
+        DECIMAL subtotal
     }
-
 
     ROL ||--o{ USUARIO : asigna
-
     PERIODO_ACADEMICO ||--o{ CURSO : contiene
-
-    USUARIO o|--o{ CURSO : imparte
-
-    USUARIO ||--o{ MATRICULA : realiza
+    USUARIO |o--o{ CURSO : imparte
     CURSO ||--o{ MATRICULA : recibe
-
     CURSO ||--o{ MATERIAL_DIDACTICO : contiene
-
     CURSO ||--o{ ACTIVIDAD_EVALUATIVA : contiene
-
     ACTIVIDAD_EVALUATIVA ||--o{ ENTREGA_EVALUACION : recibe
-    USUARIO ||--o{ ENTREGA_EVALUACION : realiza
-
-    USUARIO ||--o{ PAGO : realiza
-    USUARIO o|--o{ PAGO : valida
-
-    PAGO ||--o| FACTURA : genera
-    USUARIO ||--o{ FACTURA : pertenece
-
-    USUARIO ||--o{ SESION : inicia
+    MATRICULA |o--o{ PAGO : cubre
+    PAGO |o--o| FACTURA : genera
+    PAGO ||--o{ DETALLE_PAGO : detalla

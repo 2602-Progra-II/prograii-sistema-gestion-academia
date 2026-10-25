@@ -10,6 +10,8 @@ public class Usuario {
     private String contrasena;
     private EstadoUsuario estado;
     private Rol rol;
+    /** Credencial de inicio de sesion (columna usuario.email, UNIQUE). */
+    private String email;
 
     public Usuario(int idUsuario, String nombreUsuario, String apellidoUsuario,
                    String contrasena, EstadoUsuario estado, Rol rol) {
@@ -67,5 +69,13 @@ public class Usuario {
 
     public void setRol(Rol rol) {
         this.rol = rol;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

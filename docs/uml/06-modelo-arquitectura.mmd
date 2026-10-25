@@ -1,279 +1,35 @@
-classDiagram
+flowchart TB
+%% Arquitectura por capas (version final). Las flechas indican dependencia.
 
-direction LR
+    subgraph P["Presentación (consola) - sv.gestionacademica / menu"]
+        MAIN["Main<br/>arma las dependencias"]
+        MP["MenuPrincipal<br/>login + menú por rol"]
+        MM["MenuCore · MenuUsuarios · MenuPeriodosCursos<br/>MenuAcademico · MenuReportes<br/>(interfaz ModuloMenu)"]
+    end
 
+    subgraph C["Controladores - controller"]
+        CTRL["LoginController · UsuarioController<br/>MatriculaController · AcademicoController"]
+    end
 
-namespace Presentacion {
+    subgraph S["Servicios / reglas de negocio - service"]
+        SRV["AutenticacionService · UsuarioService · FlujoMatriculaService<br/>PeriodoAcademicoService · CursoService · MaterialService<br/>ActividadService · EvaluacionService · EstadoCuentaService<br/>ReporteService · ProcesoConcurrenteService"]
+    end
 
-    class LoginController {
-        +iniciarSesion()
-    }
+    subgraph R["Acceso a datos - repository (interfaces + JDBC)"]
+        REPO["*Repository (interfaces)<br/>*RepositoryImpl (PreparedStatement, ResultSet,<br/>try-with-resources)"]
+    end
 
-    class UsuarioController {
-        +registrarUsuario()
-        +modificarUsuario()
-        +activarUsuario()
-        +desactivarUsuario()
-        +asignarRol()
-    }
+    subgraph I["Infraestructura - persistence"]
+        DS["DataSourceConfig<br/>HikariCP (pool 10 conexiones)"]
+    end
 
-    class AcademicoController {
-        +registrarPeriodo()
-        +registrarCurso()
-        +asignarInstructor()
-        +matricularEstudiante()
-        +publicarMaterial()
-        +crearActividad()
-        +entregarActividad()
-        +calificarActividad()
-    }
+    DB[("SQL Server<br/>sistema_gestion_academia")]
 
-    class FinancieroController {
-        +registrarPago()
-        +aprobarPago()
-        +rechazarPago()
-        +generarFactura()
-        +consultarEstadoCuenta()
-    }
+    D["Dominio - entity / enums / dto / exception<br/>Usuario, Curso, ActividadEvaluativa (Tarea, Examen, Proyecto),<br/>Pago, Factura, EstadoCuenta... · BusinessException, TransaccionException, PersistenciaException"]
 
-    class ReporteController {
-        +consultarRendimiento()
-        +consultarMora()
-        +consultarFacturacion()
-    }
-}
-
-
-namespace Servicios {
-
-    class AutenticacionService {
-        +iniciarSesion(nombreUsuario, contrasena) Sesion
-        +validarCredenciales(nombreUsuario, contrasena) boolean
-        +cerrarSesion(sesion)
-    }
-
-    class UsuarioService {
-        +registrarUsuario(usuario)
-        +modificarUsuario(usuario)
-        +activarUsuario(usuario)
-        +desactivarUsuario(usuario)
-        +asignarRol(usuario, rol)
-    }
-
-    class PeriodoAcademicoService {
-        +registrarPeriodo(periodo)
-        +modificarPeriodo(periodo)
-        +activarPeriodo(periodo)
-        +finalizarPeriodo(periodo)
-    }
-
-    class CursoService {
-        +registrarCurso(curso)
-        +asignarInstructor(curso, instructor)
-        +consultarCurso(idCurso)
-    }
-
-    class MatriculaService {
-        +matricular(estudiante, curso)
-        +consultarMatricula(idMatricula)
-        +consultarHistorialAcademico(estudiante)
-    }
-
-    class MaterialService {
-        +publicarMaterial(material, instructor)
-        +consultarMaterial(curso, estudiante)
-        +descargarMaterial(material, estudiante)
-    }
-
-    class ActividadService {
-        +crearActividad(actividad, instructor)
-        +consultarActividades(estudiante, curso)
-    }
-
-    class EvaluacionService {
-        +entregarActividad(entrega, estudiante)
-        +calificarActividad(entrega, instructor)
-        +consultarCalificaciones(estudiante, curso)
-    }
-
-    class PagoService {
-        +registrarPago(pago, estudiante)
-        +aprobarPago(pago, asesor)
-        +rechazarPago(pago, asesor)
-    }
-
-    class FacturaService {
-        +generarFactura(pagoValidado, asistente)
-        +consultarFacturas(estudiante)
-        +consultarDetalle(factura)
-    }
-
-    class EstadoCuentaService {
-        +calcularSaldo(estudiante)
-        +verificarMora(estudiante) boolean
-    }
-
-    class ReporteService {
-        +calcularRendimiento(curso)
-        +consultarEstudiantesMora(filtros)
-        +calcularIndicadoresMora(filtros)
-        +consultarHistorialFacturacion(estudiante)
-    }
-}
-
-
-namespace Dominio {
-
-    class Usuario
-    class Rol
-    class Sesion
-    class PeriodoAcademico
-    class Curso
-    class Matricula
-    class MaterialDidactico
-    class ActividadEvaluativa
-    class EntregaEvaluacion
-    class Pago
-    class Factura
-    class EstadoCuenta
-    class IndicadorMora
-}
-
-
-namespace Persistencia {
-
-    class UsuarioRepository {
-        +guardar(usuario)
-        +buscarPorId(id)
-        +buscarPorNombreUsuario(nombre)
-        +actualizar(usuario)
-    }
-
-    class RolRepository {
-        +buscarPorId(id)
-        +listar()
-    }
-
-    class CursoRepository {
-        +guardar(curso)
-        +buscarPorId(id)
-        +listarPorPeriodo(idPeriodo)
-    }
-
-    class MatriculaRepository {
-        +guardar(matricula)
-        +listarPorEstudiante(idEstudiante)
-        +listarPorCurso(idCurso)
-    }
-
-    class PagoRepository {
-        +guardar(pago)
-        +buscarPorId(id)
-        +listarPendientes()
-        +actualizar(pago)
-    }
-
-    class FacturaRepository {
-        +guardar(factura)
-        +listarPorEstudiante(idEstudiante)
-    }
-
-    class MaterialRepository {
-        +guardar(material)
-        +listarPorCurso(idCurso)
-    }
-
-    class ActividadRepository {
-        +guardar(actividad)
-        +listarPorCurso(idCurso)
-    }
-
-    class EntregaRepository {
-        +guardar(entrega)
-        +listarPorActividad(idActividad)
-        +listarPorEstudiante(idEstudiante)
-    }
-}
-
-
-namespace BaseDeDatos {
-
-    class BaseDatosRelacional {
-        <<database>>
-    }
-}
-
-
-LoginController --> AutenticacionService
-
-UsuarioController --> UsuarioService
-
-AcademicoController --> PeriodoAcademicoService
-AcademicoController --> CursoService
-AcademicoController --> MatriculaService
-AcademicoController --> MaterialService
-AcademicoController --> ActividadService
-AcademicoController --> EvaluacionService
-
-FinancieroController --> PagoService
-FinancieroController --> FacturaService
-FinancieroController --> EstadoCuentaService
-
-ReporteController --> ReporteService
-
-
-AutenticacionService --> UsuarioRepository
-AutenticacionService --> Sesion
-AutenticacionService --> Usuario
-
-UsuarioService --> UsuarioRepository
-UsuarioService --> RolRepository
-UsuarioService --> Usuario
-UsuarioService --> Rol
-
-PeriodoAcademicoService --> PeriodoAcademico
-
-CursoService --> Curso
-CursoService --> CursoRepository
-
-MatriculaService --> Matricula
-MatriculaService --> MatriculaRepository
-MatriculaService --> Usuario
-MatriculaService --> Curso
-
-MaterialService --> MaterialDidactico
-MaterialService --> MaterialRepository
-
-ActividadService --> ActividadEvaluativa
-ActividadService --> ActividadRepository
-
-EvaluacionService --> EntregaEvaluacion
-EvaluacionService --> EntregaRepository
-EvaluacionService --> ActividadEvaluativa
-
-PagoService --> Pago
-PagoService --> PagoRepository
-PagoService --> Usuario
-
-FacturaService --> Factura
-FacturaService --> FacturaRepository
-FacturaService --> Pago
-
-EstadoCuentaService --> Pago
-EstadoCuentaService --> EstadoCuenta
-
-ReporteService --> Curso
-ReporteService --> Pago
-ReporteService --> Factura
-ReporteService --> IndicadorMora
-
-
-UsuarioRepository --> BaseDatosRelacional
-RolRepository --> BaseDatosRelacional
-CursoRepository --> BaseDatosRelacional
-MatriculaRepository --> BaseDatosRelacional
-PagoRepository --> BaseDatosRelacional
-FacturaRepository --> BaseDatosRelacional
-MaterialRepository --> BaseDatosRelacional
-ActividadRepository --> BaseDatosRelacional
-EntregaRepository --> BaseDatosRelacional
+    MAIN --> MP --> MM --> CTRL --> SRV --> REPO --> DS --> DB
+    SRV -- "FlujoMatriculaService: transacción (commit/rollback)<br/>ProcesoConcurrenteService: ExecutorService, 1 conexión por hilo" --> DS
+    MM -. usa .-> D
+    CTRL -. usa .-> D
+    SRV -. usa .-> D
+    REPO -. mapea .-> D
