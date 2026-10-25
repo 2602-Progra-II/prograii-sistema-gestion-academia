@@ -1,9 +1,16 @@
 classDiagram
+%% Modelo de dominio (paquete sv.gestionacademica.entity y enums) - version final Entrega 3
+
+class Identificable~ID~ {
+    <<interface>>
+    +getId() ID
+}
 
 class Usuario {
-    -String idUsuario
+    -int idUsuario
     -String nombreUsuario
-	-String apellidoUsuario
+    -String apellidoUsuario
+    -String email
     -String contrasena
     -EstadoUsuario estado
 }
@@ -14,6 +21,14 @@ class Rol {
     -String descripcion
 }
 
+class Sesion {
+    -int idSesion
+    -LocalDateTime fechaInicio
+    -LocalDateTime fechaFin
+    -boolean activa
+    +estaActiva() boolean
+}
+
 class PeriodoAcademico {
     -int idPeriodo
     -String nombrePeriodo
@@ -22,6 +37,8 @@ class PeriodoAcademico {
     -EstadoPeriodo estado
     +fechasValidas() boolean
     +estaVigente() boolean
+    +renombrar(String)
+    +cambiarEstado(EstadoPeriodo)
 }
 
 class Curso {
@@ -30,6 +47,11 @@ class Curso {
     -String nombreCurso
     -String descripcion
     -EstadoCurso estado
+    -int idPeriodo
+    -Integer idInstructor
+    +activar()
+    +desactivar()
+    +asignarInstructor(int)
 }
 
 class Matricula {
@@ -38,20 +60,15 @@ class Matricula {
     -EstadoMatricula estadoMatricula
 }
 
-class EstadoMatricula {
-    <<enumeration>>
-    PENDIENTE_PAGO
-    ACTIVA
-    CANCELADA
- }
-
 class Pago {
     -int idPago
     -double monto
     -LocalDate fechaPago
     -String rutaComprobante
     -EstadoPago estadoPago
+    -String idEstudiante
     -String idAsesorValidador
+    -Integer idMatricula
     +estaPendiente() boolean
     +estaAprobado() boolean
     +estaRechazado() boolean
@@ -62,23 +79,37 @@ class Factura {
     -String numeroFactura
     -LocalDate fechaEmision
     -double montoTotal
+    -Integer idPago
 }
 
 class MaterialDidactico {
-    -int idMaterial
-    -String tituloMaterial
-    -String rutaArchivo
-    -LocalDate fechaSubida
+    -String id
+    -String titulo
+    -String descripcion
+    -String urlEnlace
+    -int idCurso
 }
 
 class ActividadEvaluativa {
-    -int idActividad
-    -String nombreActividad
-    -String descripcion
-    -LocalDate fechaLimite
+    <<abstract>>
+    -String id
+    -String nombre
     -double ponderacion
+    -String fechaEntrega
+    -int idCurso
+    +calcularNotaFinal(double)* double
+    +calcularNotaFinal(double, LocalDate) double
+    +permiteEntregaTardia() boolean
+    +getTipo() TipoActividad
+    +calcularAporte(double) double
     +estaVencida() boolean
 }
+
+class Tarea
+class Examen {
+    +estaAprobado(double) boolean
+}
+class Proyecto
 
 class EntregaEvaluacion {
     -int idEntrega
@@ -86,61 +117,72 @@ class EntregaEvaluacion {
     -LocalDate fechaEntrega
     -double calificacion
     -String observaciones
+    -int idActividad
+    -String idEstudiante
     +estaCalificada() boolean
 }
 
-class EstadoUsuario {
-    <<enumeration>>
-    ACTIVO
-    INACTIVO
+class EstadoCuenta {
+    -String idEstudiante
+    -String nombreEstudiante
+    -double saldoPendiente
+    -boolean enMora
 }
 
-class EstadoPeriodo {
-    <<enumeration>>
+class IndicadorMora {
+    -int totalEstudiantesEnMora
+    -double montoTotalPendiente
+    -String periodoAcademico
+}
+
+class EstadoUsuario { <<enumeration>>
+    ACTIVO
+    INACTIVO }
+class EstadoPeriodo { <<enumeration>>
     PLANIFICADO
     ACTIVO
     FINALIZADO
-}
-
-class EstadoCurso {
-    <<enumeration>>
+    +puedeTransicionarA(EstadoPeriodo)* boolean }
+class EstadoCurso { <<enumeration>>
     INACTIVO
     ACTIVO
-}
-
-class EstadoPago {
-    <<enumeration>>
+    +puedeTransicionarA(EstadoCurso)* boolean }
+class EstadoMatricula { <<enumeration>>
+    PENDIENTE_PAGO
+    ACTIVA
+    CANCELADA }
+class EstadoPago { <<enumeration>>
     PENDIENTE
     APROBADO
-    RECHAZADO
-}
+    RECHAZADO }
+class TipoActividad { <<enumeration>>
+    TAREA
+    EXAMEN
+    PROYECTO
+    +crear(...)* ActividadEvaluativa }
 
+Identificable <|.. MaterialDidactico
+Identificable <|.. ActividadEvaluativa
+ActividadEvaluativa <|-- Tarea
+ActividadEvaluativa <|-- Examen
+ActividadEvaluativa <|-- Proyecto
+TipoActividad ..> ActividadEvaluativa : crea
 
-Rol "1" <-- "0..*" Usuario : tiene
-
-PeriodoAcademico "1" <-- "0..*" Curso : contiene
-
+Usuario "0..*" --> "1" Rol : tiene
+Sesion "0..*" --> "1" Usuario : de
+PeriodoAcademico "1" <-- "0..*" Curso : pertenece
 Usuario "0..1" <-- "0..*" Curso : instructor
-
-Usuario "1" <-- "0..*" Matricula : estudiante
-Curso "1" <-- "0..*" Matricula : curso
-
-Usuario "1" <-- "0..*" Pago : realiza
-Usuario "0..1" <-- "0..*" Pago : valida
-
-Pago "1" <-- "0..1" Factura : genera
-Usuario "1" <-- "0..*" Factura : pertenece
-
-Curso "1" *-- "0..*" MaterialDidactico : contiene
-
-Curso "1" *-- "0..*" ActividadEvaluativa : contiene
-
-ActividadEvaluativa "1" *-- "0..*" EntregaEvaluacion : recibe
-Usuario "1" <-- "0..*" EntregaEvaluacion : estudiante
-
+Matricula "0..*" --> "1" Usuario : estudiante
+Matricula "0..*" --> "1" Curso : curso
+Pago "0..1" --> "0..1" Matricula : cubre
+Factura "0..1" --> "1" Pago : origina
+Curso "1" *-- "0..*" MaterialDidactico
+Curso "1" *-- "0..*" ActividadEvaluativa
+ActividadEvaluativa "1" *-- "0..*" EntregaEvaluacion
+IndicadorMora ..> EstadoCuenta : resume
 
 Usuario --> EstadoUsuario
 PeriodoAcademico --> EstadoPeriodo
 Curso --> EstadoCurso
+Matricula --> EstadoMatricula
 Pago --> EstadoPago
-    Matricula ..> EstadoMatricula

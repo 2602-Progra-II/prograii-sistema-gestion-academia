@@ -5,6 +5,7 @@ import sv.gestionacademica.controller.LoginController;
 import sv.gestionacademica.controller.MatriculaController;
 import sv.gestionacademica.controller.UsuarioController;
 import sv.gestionacademica.menu.Consola;
+import sv.gestionacademica.menu.MenuAcademico;
 import sv.gestionacademica.menu.MenuPeriodosCursos;
 import sv.gestionacademica.menu.MenuPrincipal;
 import sv.gestionacademica.menu.MenuReportes;
@@ -12,6 +13,7 @@ import sv.gestionacademica.menu.MenuUsuarios;
 import sv.gestionacademica.persistence.DataSourceConfig;
 import sv.gestionacademica.repository.CursoRepository;
 import sv.gestionacademica.repository.CursoRepositoryImpl;
+import sv.gestionacademica.repository.EntregaRepositoryImpl;
 import sv.gestionacademica.repository.FacturaRepository;
 import sv.gestionacademica.repository.FacturaRepositoryImpl;
 import sv.gestionacademica.repository.MatriculaRepository;
@@ -23,10 +25,13 @@ import sv.gestionacademica.repository.PeriodoAcademicoRepositoryImpl;
 import sv.gestionacademica.repository.RolRepositoryImpl;
 import sv.gestionacademica.repository.UsuarioRepository;
 import sv.gestionacademica.repository.UsuarioRepositoryImpl;
+import sv.gestionacademica.service.ActividadService;
 import sv.gestionacademica.service.AutenticacionServiceImpl;
 import sv.gestionacademica.service.CursoService;
 import sv.gestionacademica.service.EstadoCuentaService;
+import sv.gestionacademica.service.EvaluacionService;
 import sv.gestionacademica.service.FlujoMatriculaService;
+import sv.gestionacademica.service.MaterialService;
 import sv.gestionacademica.service.PeriodoAcademicoService;
 import sv.gestionacademica.service.ProcesoConcurrenteService;
 import sv.gestionacademica.service.ReporteService;
@@ -66,7 +71,9 @@ public class Main {
         MatriculaController matriculaController = new MatriculaController(flujo);
         UsuarioController usuarioController = new UsuarioController(new UsuarioServiceImpl(usuarios));
         AcademicoController academico = new AcademicoController(
-                new PeriodoAcademicoService(periodos), new CursoService(cursos, periodos));
+                new PeriodoAcademicoService(periodos), new CursoService(cursos, periodos),
+                new MaterialService(), new ActividadService(),
+                new EvaluacionService(new EntregaRepositoryImpl()), matriculas);
 
         // Menus (todos comparten el mismo Scanner)
         Scanner scanner = new Scanner(System.in);
@@ -79,9 +86,8 @@ public class Main {
                 .setMenuUsuarios(new MenuUsuarios(consola, usuarioController, usuarios, new RolRepositoryImpl()))
                 .setMenuPeriodosCursos(new MenuPeriodosCursos(consola, academico, cursos, usuarios))
                 .setMenuReportes(new MenuReportes(consola, estadoCuenta, new ReporteService(), pagos, facturas, periodos))
-                .setProcesoConcurrente(sesion -> concurrente.ejecutarProcesoConcurrente());
-                // Compañero: cuando exista MenuAcademico (material, actividades, entregas, calificaciones):
-                // .setMenuAcademico(new MenuAcademico(consola, ...));
+                .setProcesoConcurrente(sesion -> concurrente.ejecutarProcesoConcurrente())
+                .setMenuAcademico(new MenuAcademico(consola, academico, cursos, usuarios));
 
         try {
             menu.ejecutar();

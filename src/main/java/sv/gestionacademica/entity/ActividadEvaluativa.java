@@ -1,9 +1,18 @@
 package sv.gestionacademica.entity;
 
+import sv.gestionacademica.enums.TipoActividad;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 
+/**
+ * Actividad evaluativa de un curso. Clase abstracta: solo existen sus especializaciones
+ * (Tarea, Examen, Proyecto), cada una con su propia regla para la nota final.
+ *
+ * Polimorfismo: el sistema trabaja con referencias de tipo ActividadEvaluativa y llama a
+ * calcularNotaFinal(nota, fechaEntrega) / permiteEntregaTardia() sin saber la subclase concreta.
+ */
 public abstract class ActividadEvaluativa implements Serializable, Identificable<String> {
     private static final long serialVersionUID = 1L;
 
@@ -12,6 +21,8 @@ public abstract class ActividadEvaluativa implements Serializable, Identificable
     private double ponderacion;
     private String fechaEntrega;
     private String descripcion;
+    /** Curso al que pertenece (columna actividad_evaluativa.id_curso). */
+    private int idCurso;
 
     public ActividadEvaluativa() {
     }
@@ -32,7 +43,41 @@ public abstract class ActividadEvaluativa implements Serializable, Identificable
         this.ponderacion = ponderacion;
     }
 
+    /** Nota final (0-10) de una entrega hecha a tiempo. Cada especializacion define su regla. */
     public abstract double calcularNotaFinal(double notaObtenida);
+
+    /**
+     * Nota final (0-10) considerando CUANDO se entrego. Por defecto la fecha no influye;
+     * Tarea y Proyecto lo sobrescriben (penalizacion por atraso / bonificacion a tiempo).
+     */
+    public double calcularNotaFinal(double notaObtenida, LocalDate fechaEntrega) {
+        return calcularNotaFinal(notaObtenida);
+    }
+
+    /** Si se aceptan entregas despues de la fecha limite. Por defecto no. */
+    public boolean permiteEntregaTardia() {
+        return false;
+    }
+
+    /** Tipo persistido en la BD. Las subclases lo sobrescriben; una subclase anonima cuenta como TAREA. */
+    public TipoActividad getTipo() {
+        return TipoActividad.TAREA;
+    }
+
+    /** Puntos que la nota final aporta a la nota del curso: nota * ponderacion / 100. */
+    public final double calcularAporte(double notaFinal) {
+        return notaFinal * ponderacion / 100.0;
+    }
+
+    public LocalDate getFechaLimite() {
+        return fechaEntrega == null || fechaEntrega.isBlank() ? null : LocalDate.parse(fechaEntrega);
+    }
+
+    /** true si 'fecha' es posterior a la fecha limite. Sin fecha limite nunca vence. */
+    public boolean estaVencidaPara(LocalDate fecha) {
+        LocalDate limite = getFechaLimite();
+        return limite != null && fecha != null && fecha.isAfter(limite);
+    }
 
     @Override
     public String getId() {
@@ -75,9 +120,17 @@ public abstract class ActividadEvaluativa implements Serializable, Identificable
         this.descripcion = descripcion;
     }
 
-    // Metodos de compatibilidad para subclases
+    public int getIdCurso() {
+        return idCurso;
+    }
+
+    public void setIdCurso(int idCurso) {
+        this.idCurso = idCurso;
+    }
+
+    /** true si la fecha limite ya paso (respecto de hoy). */
     public boolean estaVencida() {
-        return false;
+        return estaVencidaPara(LocalDate.now());
     }
 
     public void mostrarDetalles() {

@@ -10,6 +10,8 @@ public class MaterialDidactico implements Serializable, Identificable<String> {
     private String titulo;
     private String descripcion;
     private String urlEnlace;
+    /** Curso al que pertenece (columna material_didactico.id_curso). */
+    private int idCurso;
 
     public MaterialDidactico() {
     }
@@ -51,6 +53,14 @@ public class MaterialDidactico implements Serializable, Identificable<String> {
 
     public void setUrlEnlace(String urlEnlace) {
         this.urlEnlace = urlEnlace;
+    }
+
+    public int getIdCurso() {
+        return idCurso;
+    }
+
+    public void setIdCurso(int idCurso) {
+        this.idCurso = idCurso;
     }
 
     public boolean equals(Object o) {

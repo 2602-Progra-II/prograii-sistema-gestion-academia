@@ -14,8 +14,12 @@ import java.util.Optional;
 
 public class MatriculaRepositoryImpl implements MatriculaRepository {
 
+    // codigo_curso y nombre_curso se traen para que la matricula muestre su curso
+    // (antes el Curso quedaba solo con el id y el resto en null).
     private static final String COLUMNAS =
-            "id_matricula, fecha_matricula, estado_matricula, id_estudiante, id_curso";
+            "id_matricula, fecha_matricula, estado_matricula, id_estudiante, id_curso, "
+            + "(SELECT c.codigo_curso FROM curso c WHERE c.id_curso = matricula.id_curso) AS codigo_curso, "
+            + "(SELECT c.nombre_curso FROM curso c WHERE c.id_curso = matricula.id_curso) AS nombre_curso";
 
     // ------------------------------------------------------------------
     // Operaciones que abren y cierran su propia conexion (devuelta al pool)
@@ -271,7 +275,8 @@ public class MatriculaRepositoryImpl implements MatriculaRepository {
         int idCurso = rs.getInt("id_curso");
 
         Usuario estudiante = new Usuario(idEstudiante, null, null, null, null, null);
-        Curso curso = new Curso(idCurso, null, null, null, null, 0, null);
+        Curso curso = new Curso(idCurso, rs.getString("codigo_curso"), rs.getString("nombre_curso"),
+                null, null, 0, null);
 
         return new Matricula(idMatricula, fechaMatricula, estado, estudiante, curso);
     }

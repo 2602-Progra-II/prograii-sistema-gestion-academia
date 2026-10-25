@@ -121,7 +121,7 @@ public class MenuPrincipal {
             System.out.println("3. Matrícula, pagos y facturas");
             System.out.println("4. Material, actividades y calificaciones");
             System.out.println("5. Reportes y estado de cuenta");
-            System.out.println("6. Proceso concurrente (demo de pool de conexiones)");
+            System.out.println("6. Cierre de cartera concurrente (recalcula estados de cuenta en paralelo)");
             System.out.println("0. Cerrar sesión");
             switch (consola.leerTexto("Opción: ")) {
                 case "1" -> abrir(menuUsuarios, sesion);

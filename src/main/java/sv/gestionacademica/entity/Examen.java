@@ -1,7 +1,10 @@
 package sv.gestionacademica.entity;
 
+import sv.gestionacademica.enums.TipoActividad;
+
 import java.time.LocalDate;
 
+/** Examen: no admite entregas tardias; la nota se reporta tal cual y se aprueba con 6.0. */
 public class Examen extends ActividadEvaluativa {
 
     private static final double NOTA_MINIMA = 6.0;
@@ -11,7 +14,6 @@ public class Examen extends ActividadEvaluativa {
         super(idActividad, nombreActividad, descripcion, fechaLimite, ponderacion);
     }
 
-    // Examen: no se castiga por fecha, pero si la nota es menor al mínimo, se reporta tal cual
     @Override
     public double calcularNotaFinal(double notaObtenida) {
         return Math.max(notaObtenida, 0.0);
@@ -19,5 +21,10 @@ public class Examen extends ActividadEvaluativa {
 
     public boolean estaAprobado(double notaObtenida) {
         return notaObtenida >= NOTA_MINIMA;
+    }
+
+    @Override
+    public TipoActividad getTipo() {
+        return TipoActividad.EXAMEN;
     }
 }

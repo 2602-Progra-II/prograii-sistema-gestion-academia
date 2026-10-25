@@ -1,6 +1,7 @@
 package sv.gestionacademica.repository;
 
 import sv.gestionacademica.entity.ActividadEvaluativa;
+import sv.gestionacademica.enums.TipoActividad;
 import sv.gestionacademica.persistence.DataSourceConfig;
 
 import java.sql.*;
@@ -13,7 +14,7 @@ public class ActividadRepositoryImpl implements ActividadRepository {
 
     @Override
     public ActividadEvaluativa save(ActividadEvaluativa actividad) {
-        String sql = "INSERT INTO actividad_evaluativa (nombre_actividad, descripcion, fecha_limite, ponderacion, id_curso) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO actividad_evaluativa (nombre_actividad, descripcion, fecha_limite, ponderacion, id_curso, tipo_actividad) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DataSourceConfig.getDataSource().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -29,6 +30,7 @@ public class ActividadRepositoryImpl implements ActividadRepository {
 
             pstmt.setDouble(4, actividad.getPonderacion());
             pstmt.setInt(5, obtenerIdCursoValido(conn, actividad));
+            pstmt.setString(6, actividad.getTipo().name());
 
             pstmt.executeUpdate();
 
@@ -45,7 +47,7 @@ public class ActividadRepositoryImpl implements ActividadRepository {
 
     @Override
     public Optional<ActividadEvaluativa> findById(String id) {
-        String sql = "SELECT id_actividad, nombre_actividad, descripcion, fecha_limite, ponderacion, id_curso FROM actividad_evaluativa WHERE id_actividad = ?";
+        String sql = "SELECT id_actividad, nombre_actividad, descripcion, fecha_limite, ponderacion, id_curso, tipo_actividad FROM actividad_evaluativa WHERE id_actividad = ?";
 
         try (Connection conn = DataSourceConfig.getDataSource().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -66,7 +68,7 @@ public class ActividadRepositoryImpl implements ActividadRepository {
     @Override
     public List<ActividadEvaluativa> findAll() {
         List<ActividadEvaluativa> actividades = new ArrayList<>();
-        String sql = "SELECT id_actividad, nombre_actividad, descripcion, fecha_limite, ponderacion, id_curso FROM actividad_evaluativa";
+        String sql = "SELECT id_actividad, nombre_actividad, descripcion, fecha_limite, ponderacion, id_curso, tipo_actividad FROM actividad_evaluativa";
 
         try (Connection conn = DataSourceConfig.getDataSource().getConnection();
              Statement stmt = conn.createStatement();
@@ -83,7 +85,7 @@ public class ActividadRepositoryImpl implements ActividadRepository {
 
     @Override
     public void update(ActividadEvaluativa actividad) {
-        String sql = "UPDATE actividad_evaluativa SET nombre_actividad = ?, descripcion = ?, fecha_limite = ?, ponderacion = ?, id_curso = ? WHERE id_actividad = ?";
+        String sql = "UPDATE actividad_evaluativa SET nombre_actividad = ?, descripcion = ?, fecha_limite = ?, ponderacion = ?, id_curso = ?, tipo_actividad = ? WHERE id_actividad = ?";
 
         try (Connection conn = DataSourceConfig.getDataSource().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -99,7 +101,8 @@ public class ActividadRepositoryImpl implements ActividadRepository {
 
             pstmt.setDouble(4, actividad.getPonderacion());
             pstmt.setInt(5, obtenerIdCursoValido(conn, actividad));
-            pstmt.setInt(6, Integer.parseInt(actividad.getId()));
+            pstmt.setString(6, actividad.getTipo().name());
+            pstmt.setInt(7, Integer.parseInt(actividad.getId()));
 
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -141,31 +144,24 @@ public class ActividadRepositoryImpl implements ActividadRepository {
         return false;
     }
 
+    /**
+     * Curso del actividad. Si no se indico (idCurso = 0), se usa el primer curso registrado:
+     * lo necesitan las pruebas de integracion que crean registros sin curso.
+     * Desde la aplicacion siempre llega un curso (AcademicoController lo exige).
+     */
     private int obtenerIdCursoValido(Connection conn, ActividadEvaluativa actividad) {
-        // 1. Intentar obtener idCurso por reflexiÃ³n
-        try {
-            var m = actividad.getClass().getMethod("getIdCurso");
-            Object res = m.invoke(actividad);
-            if (res instanceof Integer && (Integer) res > 0) return (Integer) res;
-        } catch (Exception ignored) {}
-
-        try {
-            var f = actividad.getClass().getDeclaredField("idCurso");
-            f.setAccessible(true);
-            Object res = f.get(actividad);
-            if (res instanceof Integer && (Integer) res > 0) return (Integer) res;
-        } catch (Exception ignored) {}
-
-        // 2. Si no viene definido en el objeto, consultar el primer curso registrado en la BD
-        String sql = "SELECT TOP 1 id_curso FROM curso";
+        if (actividad.getIdCurso() > 0) {
+            return actividad.getIdCurso();
+        }
         try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             ResultSet rs = stmt.executeQuery("SELECT TOP 1 id_curso FROM curso ORDER BY id_curso")) {
             if (rs.next()) {
                 return rs.getInt("id_curso");
             }
-        } catch (SQLException ignored) {}
-
-        return 1;
+        } catch (SQLException e) {
+            throw new RuntimeException("No se pudo determinar el curso del actividad", e);
+        }
+        throw new IllegalStateException("No hay cursos registrados para asociar el actividad.");
     }
 
     private ActividadEvaluativa mapearActividad(ResultSet rs) throws SQLException {
@@ -181,11 +177,10 @@ public class ActividadRepositoryImpl implements ActividadRepository {
 
         double ponderacion = rs.getDouble("ponderacion");
 
-        return new ActividadEvaluativa(idActividad, nombreActividad, descripcion, fechaLimite, ponderacion) {
-            @Override
-            public double calcularNotaFinal(double notaObtenida) {
-                return (notaObtenida * ponderacion) / 100.0;
-            }
-        };
+        // Fabrica polimorfica: cada tipo construye su subclase (Tarea, Examen o Proyecto).
+        TipoActividad tipo = TipoActividad.desdeTexto(rs.getString("tipo_actividad"));
+        ActividadEvaluativa actividad = tipo.crear(idActividad, nombreActividad, descripcion, fechaLimite, ponderacion);
+        actividad.setIdCurso(rs.getInt("id_curso"));
+        return actividad;
     }
 }

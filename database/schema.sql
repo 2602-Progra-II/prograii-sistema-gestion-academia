@@ -108,6 +108,8 @@ CREATE TABLE actividad_evaluativa (
     fecha_limite DATE NULL,
     ponderacion DECIMAL(5,2) NOT NULL,
     id_curso INT NOT NULL,
+    tipo_actividad VARCHAR(20) NOT NULL DEFAULT 'TAREA',
+    CONSTRAINT CK_Actividad_Tipo CHECK (tipo_actividad IN ('TAREA', 'EXAMEN', 'PROYECTO')),
     CONSTRAINT FK_Actividad_Curso FOREIGN KEY (id_curso) REFERENCES curso(id_curso)
 );
 GO

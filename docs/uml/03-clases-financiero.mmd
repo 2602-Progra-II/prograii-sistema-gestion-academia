@@ -1,74 +1,82 @@
 classDiagram
+%% Modulo financiero: flujo transaccional matricula -> pago -> factura, estado de cuenta y concurrencia
 
-class Usuario {
-    -String idUsuario
-    -String nombreUsuario
-    -String apellidoUsuario
-    -boolean estado
+class MatriculaController {
+    +matricularEstudiante(int, int, double) Optional~ResultadoMatricula~
+    +aprobarPago(int, String) Optional~Factura~
+    +rechazarPago(int, String) boolean
 }
 
-class Rol {
-    -int idRol
-    -String nombreRol
-    -String descripcion
+class FlujoMatriculaService {
+    -DataSource dataSource
+    +matricular(int, int, double) ResultadoMatricula
+    +aprobarPago(int, String) Factura
+    +rechazarPago(int, String)
+    -enTransaccion(TrabajoTransaccional~T~) T
 }
 
-class Pago {
-    -int idPago
-    -double monto
-    -LocalDate fechaPago
-    -String rutaComprobante
-    -EstadoPago estadoPago
-    -String idAsesorValidador
-    +estaPendiente() boolean
-    +estaValidado() boolean
+class TrabajoTransaccional~T~ {
+    <<interface>>
+    +ejecutar(Connection) T
 }
 
-class Factura {
-    -int idFactura
-    -String numeroFactura
-    -LocalDate fechaEmision
-    -double montoTotal
-    +generar()
-    +obtenerDetalle()
+class ResultadoMatricula {
+    <<record>>
+    +matricula() Matricula
+    +pago() Pago
 }
 
-class EstadoPago {
-    <<enumeration>>
-    PENDIENTE
-    APROBADO
-    RECHAZADO
+class EstadoCuentaService {
+    +calcularDesdeBD(int) EstadoCuenta
+    +calcularTodosDesdeBD() List~EstadoCuenta~
+    +totalPagado(int) double
+    +obtenerEstudiantesEnMora() List~EstadoCuenta~
 }
 
-class EstadoCuenta {
-    -double saldoPendiente
-    -boolean tieneMora
-    +calcularSaldo()
-    +verificarMora() boolean
+class ReporteService {
+    +generarIndicadorMora(List~EstadoCuenta~, String) IndicadorMora
 }
 
-class IndicadorMora {
-    -int cantidadEstudiantesMora
-    -double montoTotalPendiente
-    +calcular()
-    +filtrarPorPeriodo(int idPeriodo)
-    +filtrarPorFormacion(String formacion)
+class ProcesoConcurrenteService {
+    -DataSource dataSource
+    -int hilos
+    +ejecutarCierreDeCartera() ResultadoCierreCartera
+    +ejecutarProcesoConcurrente() ResultadoCierreCartera
 }
 
-Rol "1" <-- "0..*" Usuario : tiene
+class ResultadoCierreCartera {
+    <<record>>
+    +cuentas() List~EstadoCuenta~
+    +totalPendiente() double
+    +totalPagado() double
+    +estudiantesEnMora() int
+    +errores() int
+}
 
-Usuario "1" <-- "0..*" Pago : estudiante
+class BusinessException
+class TransaccionException
+class PersistenciaException
 
-Usuario "0..1" <-- "0..*" Pago : valida
+class PagoRepository { <<interface>> }
+class MatriculaRepository { <<interface>> }
+class FacturaRepository { <<interface>> }
+class UsuarioRepository { <<interface>> }
 
-Pago "1" <-- "0..1" Factura : genera
+MatriculaController --> FlujoMatriculaService
+FlujoMatriculaService --> MatriculaRepository
+FlujoMatriculaService --> PagoRepository
+FlujoMatriculaService --> FacturaRepository
+FlujoMatriculaService --> UsuarioRepository
+FlujoMatriculaService ..> TrabajoTransaccional
+FlujoMatriculaService ..> ResultadoMatricula
+FlujoMatriculaService ..> BusinessException : regla de negocio
+FlujoMatriculaService ..> TransaccionException : error tecnico + rollback
 
-Usuario "1" <-- "0..*" Factura : estudiante
+EstadoCuentaService --> PagoRepository
+EstadoCuentaService --> UsuarioRepository
+ReporteService ..> EstadoCuenta
+ReporteService ..> IndicadorMora
 
-Usuario "1" *-- "1" EstadoCuenta : posee
-
-EstadoCuenta "1" --> "0..*" Pago : considera
-
-IndicadorMora --> EstadoCuenta : analiza
-
-Pago --> EstadoPago
+ProcesoConcurrenteService ..> ResultadoCierreCartera
+ProcesoConcurrenteService ..> PersistenciaException
+ProcesoConcurrenteService ..> EstadoCuenta

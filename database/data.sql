@@ -47,14 +47,16 @@ INSERT INTO material_didactico (titulo, descripcion, url_enlace, id_curso) VALUE
 GO
 
 -- 7. Actividades Evaluativas (Alineado con ActividadRepositoryImpl)
-INSERT INTO actividad_evaluativa (nombre_actividad, descripcion, fecha_limite, ponderacion, id_curso) VALUES
-('Entrega 3: Sistema de Gestión Academia', 'Desarrollo de capa JDBC y base de datos SQL Server', '2026-11-15', 35.00, 1),
-('Laboratorio Parcial de Límites', 'Resolución de problemas de derivadas y razón de cambio', '2026-05-10', 20.00, 2);
+-- tipo_actividad decide la subclase (Tarea, Examen, Proyecto) y su regla de nota final
+INSERT INTO actividad_evaluativa (nombre_actividad, descripcion, fecha_limite, ponderacion, id_curso, tipo_actividad) VALUES
+('Entrega 3: Sistema de Gestión Academia', 'Desarrollo de capa JDBC y base de datos SQL Server', '2026-11-15', 35.00, 1, 'PROYECTO'),
+('Laboratorio Parcial de Límites', 'Resolución de problemas de derivadas y razón de cambio', '2026-05-10', 20.00, 2, 'EXAMEN'),
+('Tarea 1: Colecciones y genéricos', 'Ejercicios con List, Map y clases genéricas', '2026-10-20', 15.00, 1, 'TAREA');
 GO
 
 -- 8. Entregas de Evaluación (Alineado con EntregaRepositoryImpl)
 INSERT INTO entrega_evaluacion (ruta_archivo_entrega, fecha_entrega, calificacion, observaciones, id_actividad, id_estudiante) VALUES
-('/uploads/entregas/roberto_prog2.zip', '2026-10-18', 0.0, 'Pendiente de revisión', 1, '3');
+('/uploads/entregas/roberto_prog2.zip', '2026-10-18', 0.0, NULL, 1, '3');  -- sin observaciones = pendiente de calificar
 GO
 
 -- 9. Pagos (id_estudiante = id de usuario como texto; id_matricula enlaza con la matricula pagada)

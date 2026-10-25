@@ -126,29 +126,24 @@ public class MaterialRepositoryImpl implements MaterialRepository {
         return false;
     }
 
+    /**
+     * Curso del material. Si no se indico (idCurso = 0), se usa el primer curso registrado:
+     * lo necesitan las pruebas de integracion que crean registros sin curso.
+     * Desde la aplicacion siempre llega un curso (AcademicoController lo exige).
+     */
     private int obtenerIdCursoValido(Connection conn, MaterialDidactico material) {
-        try {
-            var m = material.getClass().getMethod("getIdCurso");
-            Object res = m.invoke(material);
-            if (res instanceof Integer && (Integer) res > 0) return (Integer) res;
-        } catch (Exception ignored) {}
-
-        try {
-            var f = material.getClass().getDeclaredField("idCurso");
-            f.setAccessible(true);
-            Object res = f.get(material);
-            if (res instanceof Integer && (Integer) res > 0) return (Integer) res;
-        } catch (Exception ignored) {}
-
-        String sql = "SELECT TOP 1 id_curso FROM curso";
+        if (material.getIdCurso() > 0) {
+            return material.getIdCurso();
+        }
         try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             ResultSet rs = stmt.executeQuery("SELECT TOP 1 id_curso FROM curso ORDER BY id_curso")) {
             if (rs.next()) {
                 return rs.getInt("id_curso");
             }
-        } catch (SQLException ignored) {}
-
-        return 1;
+        } catch (SQLException e) {
+            throw new RuntimeException("No se pudo determinar el curso del material", e);
+        }
+        throw new IllegalStateException("No hay cursos registrados para asociar el material.");
     }
 
     private MaterialDidactico mapearMaterial(ResultSet rs) throws SQLException {
@@ -159,12 +154,7 @@ public class MaterialRepositoryImpl implements MaterialRepository {
         int idCurso = rs.getInt("id_curso");
 
         MaterialDidactico mat = new MaterialDidactico(id, titulo, descripcion, urlEnlace);
-
-        try {
-            var f = mat.getClass().getDeclaredField("idCurso");
-            f.setAccessible(true);
-            f.set(mat, idCurso);
-        } catch (Exception ignored) {}
+        mat.setIdCurso(idCurso);
 
         return mat;
     }
