@@ -52,6 +52,22 @@ import java.util.Scanner;
 public class Main {
 
     public static void main(String[] args) {
+        try {
+            // Armar la aplicacion ya abre el pool (getDataSource): si la BD no responde,
+            // el error cae en el catch de abajo y no como stack trace.
+            construirAplicacion().ejecutar();
+        } catch (RuntimeException e) {
+            System.err.println("No se pudo conectar con la base de datos o iniciar la aplicación.");
+            System.err.println("Causa: " + causaRaiz(e).getMessage());
+            System.err.println("Verifica que SQL Server esté activo, que ejecutaste schema.sql, usuario_app.sql "
+                    + "y data.sql, y las variables DB_URL, DB_USER y DB_PASSWORD.");
+        } finally {
+            DataSourceConfig.close();
+        }
+    }
+
+    /** Arma las capas Repository -> Service -> Controller -> Menu (inyeccion de dependencias manual). */
+    private static MenuPrincipal construirAplicacion() {
         // Repositories (JDBC)
         UsuarioRepository usuarios = new UsuarioRepositoryImpl();
         CursoRepository cursos = new CursoRepositoryImpl();
@@ -79,7 +95,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         Consola consola = new Consola(scanner);
 
-        MenuPrincipal menu = new MenuPrincipal(consola, login, cursos, matriculas)
+        return new MenuPrincipal(consola, login, cursos, matriculas)
                 // El asesor que aprueba/rechaza pagos es el usuario con sesion iniciada.
                 .setMenuCore(sesion -> new MenuCore(matriculaController, usuarios, cursos, pagos, matriculas,
                         scanner, String.valueOf(sesion.getUsuario().getIdUsuario())).ejecutar())
@@ -88,15 +104,13 @@ public class Main {
                 .setMenuReportes(new MenuReportes(consola, estadoCuenta, new ReporteService(), pagos, facturas, periodos))
                 .setProcesoConcurrente(sesion -> concurrente.ejecutarProcesoConcurrente())
                 .setMenuAcademico(new MenuAcademico(consola, academico, cursos, usuarios));
+    }
 
-        try {
-            menu.ejecutar();
-        } catch (RuntimeException e) {
-            System.err.println("No se pudo iniciar la aplicación: " + e.getMessage());
-            System.err.println("Verifica que SQL Server esté activo, que ejecutaste schema.sql y data.sql, "
-                    + "y las variables DB_URL, DB_USER y DB_PASSWORD.");
-        } finally {
-            DataSourceConfig.close();
+    private static Throwable causaRaiz(Throwable e) {
+        Throwable t = e;
+        while (t.getCause() != null && t.getCause() != t) {
+            t = t.getCause();
         }
+        return t;
     }
 }
