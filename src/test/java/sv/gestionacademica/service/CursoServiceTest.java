@@ -1,4 +1,4 @@
-package sv.gestionacademica.Service;
+package sv.gestionacademica.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

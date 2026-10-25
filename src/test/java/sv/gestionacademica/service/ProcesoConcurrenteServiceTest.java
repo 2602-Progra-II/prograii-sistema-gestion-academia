@@ -1,4 +1,4 @@
-package sv.gestionacademica.Service;
+package sv.gestionacademica.service;
 
 import org.junit.jupiter.api.Test;
 import sv.gestionacademica.persistence.DataSourceConfig;
