@@ -189,11 +189,56 @@ mvn test -Dtest="AutenticacionServiceImplTest,AcademicoControllerTest,ActividadP
 
 > ⚠️ **Varias pruebas de integración borran tablas de la BD** para empezar desde un estado conocido. Después de `mvn test`, vuelve a ejecutar `schema.sql` y `data.sql` antes de usar la aplicación o hacer la demo.
 
+
 ## Prueba desde cero (checklist)
 
-1. `git clone https://github.com/2602-Progra-II/prograii-sistema-gestion-academia.git`
-2. Abrir el proyecto en IntelliJ o ejecutar `mvn clean compile`. Maven descarga las dependencias.
-3. Ejecutar `schema.sql`, `usuario_app.sql` y `data.sql`.
-4. Ejecutar `DataSourceCheck` y confirmar que aparece *Conexión OK* tres veces.
-5. Ejecutar `Main` y seguir el recorrido de demostración.
-6. Ejecutar `mvn test` y luego volver a ejecutar `schema.sql` y `data.sql`.
+Esta guía permite preparar el proyecto y ejecutar la aplicación utilizando la base de datos alojada en Azure SQL.
+
+1. **Clonar el repositorio**
+
+   ```bash
+   git clone https://github.com/2602-Progra-II/prograii-sistema-gestion-academia.git
+   ```
+
+2. **Preparar el entorno de desarrollo**
+
+   Abrir el proyecto en IntelliJ IDEA, verificar que esté configurado el JDK requerido y ejecutar:
+
+   ```bash
+   mvn clean compile
+   ```
+
+   Maven descargará las dependencias necesarias y compilará el proyecto.
+
+3. **Configurar las variables de entorno**
+
+   Configurar las siguientes variables de entorno en la configuración de ejecución de IntelliJ IDEA:
+
+   | Variable | Descripción |
+   |---|---|
+   | `DB_URL` | jdbc:sqlserver://sql-gestion-academica-uees.database.windows.net:1433;databaseName=GestionAcademicaDB;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;|
+   | `DB_USER` | academia_app|
+   | `DB_PASSWORD` | PrograII2026 |
+
+   Estas variables permiten que la aplicación se conecte a la base de datos sin almacenar credenciales directamente en el código fuente.
+
+4. **Verificar la conectividad con Azure SQL**
+
+   Confirmar que el servidor de Azure SQL permita conexiones desde la dirección IP pública del equipo donde se ejecutará el programa y que el usuario configurado tenga los permisos necesarios.
+
+5. **Ejecutar la aplicación**
+
+   Ejecutar la clase principal `Main` desde IntelliJ IDEA y comprobar que la aplicación se conecta a Azure SQL y permite realizar el recorrido de demostración.
+
+6. **Ejecutar las pruebas automatizadas**
+
+   Desde la terminal, ejecutar:
+
+   ```bash
+   mvn test
+   ```
+
+   Revisar los resultados y verificar que las pruebas que requieren conexión a Azure SQL se ejecuten con las variables de entorno y la conectividad correctamente configuradas.
+
+> **Importante:** La base de datos de Azure debe estar preparada previamente para la evaluación. No ejecutar scripts de creación de tablas o carga de datos sobre la base compartida sin verificar antes su propósito y sus posibles efectos.
+
